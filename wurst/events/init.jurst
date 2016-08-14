@@ -1,0 +1,171 @@
+
+scope init
+    globals
+        private constant int SANDMILLID = 'h004'
+        private constant int SANDKEGID = 'h005'
+        private constant int LAVAWELLID = 'h007'
+        private constant real SANDMILLX = 2280.
+        private constant real SANDMILLY = -2900.
+        private constant real KEGOFFS = 200.
+        private constant real RADOFFS = 5*bj_PI/8
+        private constant real BUFFEROFFS = bj_PI/8
+        private constant real COBBLE_DURATION = 4.
+        private constant real MARBLE_DURATION = 5.
+        private constant real STARTTIME = .5
+        private constant real TIMEOFDAY = 12.
+        private constant string TELEPORT = "Abilities\\Spells\\Human\\MassTeleport\\MassTeleportTarget.mdl"
+    end
+
+    private function initializeQuests()
+        quest credits = CreateQuest()
+        quest mapDescrip = CreateQuest()
+        quest changeLog = CreateQuest()
+        //credits
+        QuestSetCompleted(credits, false)
+        QuestSetDescription(credits, "Thanks to |cff999999Vexorian|r and |cff999999Anitarf|r for the original IsTerrainWalkable library.|n |nThanks to the developers of |cff999999Half-Life|r for the inspiration to make this map.|n |nThanks to |cff999999highdarktemplar|r at deviantart for the Gonarch painting.")
+        QuestSetDiscovered(credits, true)
+        QuestSetEnabled(credits, true)
+        QuestSetIconPath(credits, "ReplaceableTextures\\CommandButtons\\BTNBansheeAdept.blp")
+        QuestSetRequired(credits, false)
+        QuestSetTitle(credits, "|cff999999Credits|r")
+        //mapDescrip
+        QuestSetCompleted(mapDescrip, false)
+        QuestSetDescription(mapDescrip, "A boss fight versus |cff999999Gargonach|r, inspired by Gonarch in Half-Life. This was created for Hive Workshop's Solo Minimapping Boss Contest.|n |n|cff999999http://goo.gl/4BQBz|r|n |nNote also this map is |cff999999open source|r.")
+        QuestSetDiscovered(mapDescrip, true)
+        QuestSetEnabled(mapDescrip, true)
+        QuestSetIconPath(mapDescrip, "ReplaceableTextures\\CommandButtons\\BTNGreaterRejuvScroll.blp")
+        QuestSetRequired(mapDescrip, false)
+        QuestSetTitle(mapDescrip, "|cff999999Map Description|r")
+        //changeLog
+        QuestSetCompleted(changeLog, false)
+        QuestSetDescription(changeLog, "|cff9999992012.05.22|r - Version 008: First patch fixing a bug with don rogo attack spell and lighthopping tooltip, also fixing some pathing blocker positions. Small interface change.|n|cff9999992012.05.17|r - Version 007: First Upload (Final Entry for the Contest)")
+        QuestSetDiscovered(changeLog, true)
+        QuestSetEnabled(changeLog, true)
+        QuestSetIconPath(changeLog, "ReplaceableTextures\\CommandButtons\\BTNScrollOfHaste.blp")
+        QuestSetRequired(changeLog, false)
+        QuestSetTitle(changeLog, "|cff999999Change Log|r")
+        //killGargonach
+        game_killGargonach = CreateQuest()
+        QuestSetCompleted(game_killGargonach, false)
+        QuestSetDescription(game_killGargonach, "|cff993300Tip:|r By destroying |cff999900lavawells|r, Gargonach will be unable to heal himself.")
+        QuestSetDiscovered(game_killGargonach, true)
+        QuestSetEnabled(game_killGargonach, true)
+        QuestSetIconPath(game_killGargonach, "ReplaceableTextures\\CommandButtons\\BTNHeroCryptLord.blp")
+        QuestSetRequired(game_killGargonach, true)
+        QuestSetTitle(game_killGargonach, "|cff999999Kill Gargonach|r")
+        //enableLights
+        game_enableLights = CreateQuest()
+        QuestSetCompleted(game_enableLights, false)
+        QuestSetDescription(game_enableLights, "|cff993300Tip:|r Your |cff999999Use|r ability will illuminate an obelisk.")
+        QuestSetDiscovered(game_enableLights, true)
+        QuestSetEnabled(game_enableLights, true)
+        QuestSetIconPath(game_enableLights, "ReplaceableTextures\\CommandButtons\\BTNHumanArcaneTower.blp")
+        QuestSetRequired(game_enableLights, true)
+        QuestSetTitle(game_enableLights, "|cff999999Illuminate the Map|r")
+        //safePassage
+        game_safePassage = CreateQuest()
+        QuestSetCompleted(game_safePassage, false)
+        QuestSetDescription(game_safePassage, "There exists a safe passage to Gargonach.|n |n|cff993300Tip:|r There's a |cff999999Sand Mill|r in the southeast corner of the map.")
+        QuestSetDiscovered(game_safePassage, true)
+        QuestSetEnabled(game_safePassage, true)
+        QuestSetIconPath(game_safePassage, "ReplaceableTextures\\CommandButtons\\BTNHumanLumberMill.blp")
+        QuestSetRequired(game_safePassage, true)
+        QuestSetTitle(game_safePassage, "|cff999999Safe Passage|r")
+        //enableFountain
+        game_enableFountain = CreateQuest()
+        QuestSetCompleted(game_enableFountain, false)
+        QuestSetDescription(game_enableFountain, "You must prod the stagnant fountain to life to enable it.|n |n|cff993300Tip:|r There's a |cff999999Generator|r in the southwest region of the map.")
+        QuestSetDiscovered(game_enableFountain, true)
+        QuestSetEnabled(game_enableFountain, true)
+        QuestSetIconPath(game_enableFountain, "ReplaceableTextures\\CommandButtons\\BTNFountainOfLife.blp")
+        QuestSetRequired(game_enableFountain, true)
+        QuestSetTitle(game_enableFountain, "|cff999999Enable Fountain|r")
+    end
+
+    private function c takes nothing returns boolean
+        int xIndex = 0
+        int yIndex
+        effect fx
+        unit ob = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), units_OBELISK, terrain_STARTX-256., terrain_STARTY + 256., 270.)
+        weathereffect wE = AddWeatherEffect(bj_mapInitialPlayableArea, 'FDwl')
+        EnableWeatherEffect(wE, true)
+        initializeQuests()
+        units_gargonach = CreateUnit(Player(1), units_GARGONACHID, 0., 0., 270.)
+        SetUnitVertexColor(units_gargonach, 255, 55, 55, 125)
+        SetUnitInvulnerable(ob, true)
+        units_fountain = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), units_DEFILEDFOUNTAINID, 530., -2410., 270.)
+        SetFloatGameState(GAME_STATE_TIME_OF_DAY, TIMEOFDAY)
+        SetTimeOfDayScale(0.)
+        ob = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), units_OBELISK, -2430., 0., 270.)
+        SetUnitInvulnerable(ob, true)
+        ob = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), units_OBELISK, -2440., -2880., 270.)
+        SetUnitInvulnerable(ob, true)
+        ob = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), units_OBELISK, 0., 2300., 270.)
+        SetUnitInvulnerable(ob, true)
+        ob = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), units_OBELISK, 2820., -2320., 270.)
+        SetUnitInvulnerable(ob, true)
+        CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), units_GENERATORID, -1000., -3000., 270.)
+        loop
+            exitwhen xIndex > 2
+            yIndex = 0
+            loop
+                exitwhen yIndex > 2
+                terrain_tempModify(terrain_STARTX-128. + 128.*xIndex, terrain_STARTY-128. + 128*yIndex, COBBLE_DURATION, terrain_TYPE_COBBLESTONE)
+                yIndex++
+            end
+            xIndex++
+        end
+        xIndex = 0
+        loop
+            exitwhen xIndex > 4
+            terrain_tempModify(terrain_STARTX-256. + 128.*xIndex, terrain_STARTY + 256., MARBLE_DURATION, terrain_TYPE_WHITEMARBLE)
+            xIndex++
+        end
+        xIndex = 0
+        loop
+            exitwhen xIndex > 4
+            terrain_tempModify(terrain_STARTX-256. + 128.*xIndex, terrain_STARTY-256., MARBLE_DURATION, terrain_TYPE_WHITEMARBLE)
+            xIndex++
+        end
+        yIndex = 0
+        loop
+            exitwhen yIndex > 2
+            terrain_tempModify(terrain_STARTX-256., terrain_STARTY-128. + 128*yIndex, MARBLE_DURATION, terrain_TYPE_WHITEMARBLE)
+            yIndex++
+        end
+        yIndex = 0
+        loop
+            exitwhen yIndex > 2
+            terrain_tempModify(terrain_STARTX + 256., terrain_STARTY-128. + 128*yIndex, MARBLE_DURATION, terrain_TYPE_WHITEMARBLE)
+            yIndex++
+        end
+        units_donRogo = CreateUnit(Player(0), units_HEROID, terrain_STARTX, terrain_STARTY, 270.)
+        units_sandMill = CreateUnit(Player(2), SANDMILLID, SANDMILLX, SANDMILLY, 270.)
+        xIndex = 0
+        loop
+            exitwhen xIndex > 4
+            units_sandKegs[xIndex] = CreateUnit(Player(2), SANDKEGID, SANDMILLX + KEGOFFS*Cos(RADOFFS + BUFFEROFFS*xIndex), SANDMILLY + KEGOFFS*Sin(RADOFFS*BUFFEROFFS*xIndex), 270.)
+            UnitAddAbility(units_sandKegs[xIndex], units_LOCUSTID)
+            xIndex++
+        end
+        fx = AddSpecialEffect(TELEPORT, terrain_STARTX, terrain_STARTY)
+        DestroyEffect(fx)
+        units_lavawells[0] = CreateUnit(Player(1), LAVAWELLID, -1030., -610., 270.)
+        units_lavawells[1] = CreateUnit(Player(1), LAVAWELLID, -510., 820., 270.)
+        units_lavawells[2] = CreateUnit(Player(1), LAVAWELLID, 920., -100., 270.)
+        units_lavawells[3] = CreateUnit(Player(1), LAVAWELLID, 1450., -1450., 270.)
+        units_lavawells[4] = CreateUnit(Player(1), LAVAWELLID, 115., -2030., 270.)
+        FogMaskEnable(false)
+        DisplayTextToPlayer(GetLocalPlayer(), 0., 0., "Welcome to |cff999999Gargonach's|r Lair. If you get stuck, check the |cff999999Quest Menu|r for tips.")
+        fx = null
+        ob = null
+        return false
+    end
+
+    init
+        trigger t = CreateTrigger()
+        TriggerRegisterTimerEvent(t, STARTTIME, false)
+        TriggerAddCondition(t, Condition(function c))
+        t = null
+    end
+end

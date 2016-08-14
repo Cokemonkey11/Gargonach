@@ -1,0 +1,41 @@
+
+scope lavaburst
+    globals
+        private constant int LAVABURSTID = 'A003'
+
+    end
+
+    private function c takes nothing returns boolean
+        int index = 0
+        real uX
+        real uY
+        if GetSpellAbilityId() == LAVABURSTID
+            uX = GetUnitX(units_gargonach)
+            uY = GetUnitY(units_gargonach)
+            helper_sound3d(helper_ghoulSounds[GetRandomInt(0, 2)], uX, uY, 50.)
+            lavawells_attack()
+        end
+        return false
+    end
+
+    private function delayedC takes nothing returns boolean
+        helper_ghoulSounds[0] = "Units\\Undead\\Ghoul\\GhoulWarcry1.wav"
+        helper_ghoulSounds[1] = "Units\\Undead\\Ghoul\\GhoulWhat1.wav"
+        helper_ghoulSounds[2] = "Units\\Undead\\Ghoul\\GhoulWhat3.wav"
+        helper_soundInitialize(helper_ghoulSounds[0])
+        helper_soundInitialize(helper_ghoulSounds[1])
+        helper_soundInitialize(helper_ghoulSounds[2])
+        return false
+    end
+
+    init
+        trigger t = CreateTrigger()
+        trigger delayed = CreateTrigger()
+        TriggerRegisterTimerEvent(delayed, 0., false)
+        TriggerAddCondition(delayed, Condition(function delayedC))
+        delayed = null
+        TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
+        TriggerAddCondition(t, Condition(function c))
+        t = null
+    end
+end

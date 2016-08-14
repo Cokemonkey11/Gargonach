@@ -1,0 +1,120 @@
+
+scope ragnorak initializer i //note the hammer should face PI radians past the direction it travels.
+    globals
+        private constant int RAGNORAKID = 'A004'
+        private constant int HAMMERID = 'h00A'
+        private constant real FIDELITY = 1./30.
+        private constant real CHANNELTIME = .75
+        private constant real FALLTIME = CHANNELTIME + .5
+        private constant real FADETIME = FALLTIME + 3.
+        private constant real FALLANGLE = -75.*bj_DEGTORAD
+        private constant real INITIALHEIGHT = 1200.
+        private constant real TARGETHEIGHT = 600.
+        private constant real INITIALOFFS = 250.
+        private constant real RADIUS = 300.
+        private constant real DAMAGE = 300.
+        private constant real CHANNELEFFECTOFFSET = 150.
+        private constant string CHANNELINGMODEL = "Abilities\\Spells\\Human\\Invisibility\\InvisibilityTarget.mdl"
+        private constant string SMASHSOUND = "Sound\\Units\\Combat\\MetalHeavyBashWood3.wav"
+        private constant string THUNDERCLAPSOUND = "Abilities\\Spells\\Human\\ThunderClap\\ThunderClapCaster.wav"
+        private boolean show
+        private boolean damaged
+        private group grp = CreateGroup()
+        private timer time = CreateTimer()
+        private real timeElapsed
+        private real angle
+        private real vX
+        private real vY
+        private real tX
+        private real tY
+        private unit ragHammer
+    end
+
+    private function p()
+        effect fx
+        unit fst
+        real angle
+        real uX
+        real uY
+        timeElapsed = timeElapsed + FIDELITY
+        if timeElapsed > 0. and timeElapsed < CHANNELTIME
+            if GetUnitCurrentOrder(units_donRogo) != OrderId("deathanddecay")
+                PauseTimer(time)
+                helper_quickTTAll("Interrupted!", GetUnitX(units_donRogo), GetUnitY(units_donRogo), bj_PI/2)
+            else
+                angle = GetUnitFacing(units_donRogo) + (timeElapsed/CHANNELTIME)*(bj_PI*2)
+                fx = AddSpecialEffect(CHANNELINGMODEL, GetUnitX(units_donRogo) + CHANNELEFFECTOFFSET*Cos(angle), GetUnitY(units_donRogo) + CHANNELEFFECTOFFSET*Sin(angle))
+                DestroyEffect(fx)
+            end
+        elseif timeElapsed > CHANNELTIME and timeElapsed < FALLTIME
+            if show == false
+                ShowUnit(ragHammer, true)
+                UnitAddAbility(ragHammer, 'Aloc')
+                show = true
+            end
+            SetUnitX(ragHammer, GetUnitX(ragHammer) + vX)
+            SetUnitY(ragHammer, GetUnitY(ragHammer) + vY)
+            SetUnitFlyHeight(ragHammer, TARGETHEIGHT + (INITIALHEIGHT-TARGETHEIGHT)*((FALLTIME-CHANNELTIME)-timeElapsed), 0.)
+        elseif timeElapsed > FALLTIME and timeElapsed < FADETIME
+            if timeElapsed < FALLTIME + .5
+                fx = AddSpecialEffect(helper_DUSTMODEL, tX + GetRandomReal(-100., 100.), tY + GetRandomReal(-100., 100.))
+                DestroyEffect(fx)
+            end
+            SetUnitVertexColor(ragHammer, 255, 255, 255, R2I(255.-(timeElapsed-FALLTIME)*255.))
+            if damaged == false
+                uX = GetUnitX(ragHammer)
+                uY = GetUnitY(ragHammer)
+                helper_sound3d(SMASHSOUND, uX, uY, GetUnitFlyHeight(units_hammer))
+                helper_sound3d(THUNDERCLAPSOUND, uX, uY, GetUnitFlyHeight(units_hammer))
+                GroupEnumUnitsInRange(grp, uX, uY, RADIUS, null)
+                loop
+                    fst = FirstOfGroup(grp)
+                    exitwhen fst == null
+                    if IsUnitEnemy(fst, Player(0))
+                        UnitDamageTarget(units_donRogo, fst, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                    end
+                    GroupRemoveUnit(grp, fst)
+                end
+                damaged = true
+            end
+        else
+            RemoveUnit(ragHammer)
+            PauseTimer(time)
+        end
+        fx = null
+    end
+
+    private function c takes nothing returns boolean
+        if GetSpellAbilityId() == RAGNORAKID
+            tX = GetSpellTargetX()
+            tY = GetSpellTargetY()
+            timeElapsed = 0.
+            show = false
+            damaged = false
+            angle = GetRandomReal(0, 2*bj_PI)
+            ragHammer = CreateUnit(Player(PLAYER_NEUTRAL_AGGRESSIVE), HAMMERID, tX + INITIALOFFS*Cos(angle), tY + INITIALOFFS*Sin(angle), angle*bj_RADTODEG)
+            vX = INITIALHEIGHT*Cos(FALLANGLE)*Cos(angle + bj_PI)*FIDELITY
+            vY = INITIALHEIGHT*Cos(FALLANGLE)*Sin(angle + bj_PI)*FIDELITY
+            ShowUnit(ragHammer, false)
+            TimerStart(time, FIDELITY, true, function p)
+        end
+        return false
+    end
+
+    private function delayedC takes nothing returns boolean
+        helper_soundInitialize(SMASHSOUND)
+        helper_soundInitialize(THUNDERCLAPSOUND)
+        return false
+    end
+
+    private function i()
+        trigger t = CreateTrigger()
+        trigger delayed = CreateTrigger()
+        TriggerRegisterTimerEvent(delayed, 0., false)
+        TriggerAddCondition(delayed, Condition(function delayedC))
+        delayed = null
+        TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
+        TriggerAddCondition(t, Condition(function c))
+        t = null
+    end
+end

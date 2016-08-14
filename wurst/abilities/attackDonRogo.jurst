@@ -1,0 +1,143 @@
+
+scope attackDonRogo
+    class attackDat
+        unit u
+        real timeLeft
+    end
+
+    globals
+        private constant int ATTACKDONROGOID = 'A002'
+        private constant real ATTACKANGLE                 =bj_PI/4
+        private constant real DAMAGE                      =90.
+        private constant real FIDELITY                    =.05
+        private constant real MAXATTACKHEIGHT             =75.
+        private constant real PAUSETIME                   =.5
+        private constant real RANGE                       =250.
+        private constant real BOSSRANGE                   =350.
+        private constant real MASSIVEPAUSETIME            =.4
+        private constant string DAMAGESOUND               ="Sound\\Units\\Combat\\MetalHeavyBashFlesh2.wav"
+        private group grp = CreateGroup()
+        private player owner
+        private real centerX
+        private real centerY
+        private unit attacker
+        private attackDat array attackDB
+        private timer time = CreateTimer()
+        private int dbIndex = -1
+    end
+
+    private function f takes nothing returns boolean
+        real facing
+        real angBetween
+        real difference
+        real fX
+        real fY
+        unit filter = GetFilterUnit()
+        int rand
+        if IsUnitEnemy(filter, owner) and filter != units_gargonach and GetUnitState(filter, UNIT_STATE_LIFE)>=1 and GetUnitFlyHeight(filter) < MAXATTACKHEIGHT
+            facing = bj_DEGTORAD*GetUnitFacing(attacker)
+            fX = GetUnitX(filter)
+            fY = GetUnitY(filter)
+            angBetween = Atan2(fY-centerY, fX-centerX)
+            difference = facing-angBetween
+            difference = helper_normalizeAngle(difference)
+            if difference < ATTACKANGLE and difference > -1*ATTACKANGLE
+                UnitDamageTarget(attacker, filter, DAMAGE, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                helper_sound3d(DAMAGESOUND, fX, fY, GetUnitFlyHeight(filter))
+            end
+            if GetUnitTypeId(filter) == units_LAVAWELLID
+                aggroControl_increaseAggro(1, 5.)
+            end
+        end
+        filter = null
+        return false
+    end
+
+    private function p()
+        attackDat tempDat
+        int index = 0
+        real facing
+        real fX
+        real fY
+        real fFacing
+        real angBetween
+        real difference
+        unit fst
+        loop
+            exitwhen index > dbIndex
+            tempDat = attackDB[index]
+            tempDat.timeLeft = tempDat.timeLeft-FIDELITY
+            if tempDat.timeLeft<=0.
+                PauseUnit(tempDat.u, false)
+                owner = GetOwningPlayer(tempDat.u)
+                attacker = tempDat.u
+                centerX = GetUnitX(tempDat.u)
+                centerY = GetUnitY(tempDat.u)
+                GroupEnumUnitsInRange(grp, centerX, centerY, RANGE, Filter(function f))
+                GroupEnumUnitsInRange(grp, centerX, centerY, BOSSRANGE, null)
+                loop
+                    fst = FirstOfGroup(grp)
+                    exitwhen fst == null
+                    if fst == units_gargonach and GetUnitState(units_gargonach, UNIT_STATE_LIFE)>=1
+                        facing = bj_DEGTORAD*GetUnitFacing(units_donRogo)
+                        fX = GetUnitX(units_gargonach)
+                        fY = GetUnitY(units_gargonach)
+                        fFacing = GetUnitFacing(units_gargonach)
+                        angBetween = Atan2(fY-centerY, fX-centerX)
+                        facing = helper_normalizeAngle(facing)
+                        angBetween = helper_normalizeAngle(angBetween)
+                        difference = facing-angBetween
+                        if difference < ATTACKANGLE and difference > -1*ATTACKANGLE
+                            UnitDamageTarget(units_donRogo, units_gargonach, DAMAGE, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                            units_timedPause(units_gargonach, MASSIVEPAUSETIME, "set", units_STANDARDSTUN)
+                            helper_sound3d(DAMAGESOUND, fX, fY, GetUnitFlyHeight(units_gargonach))
+                        end
+                    end
+                    GroupRemoveUnit(grp, fst)
+                end
+                destroy tempDat
+                attackDB[index] = attackDB[dbIndex]
+                dbIndex--
+                if dbIndex == -1
+                    PauseTimer(time)
+                end
+            end
+            index++
+        end
+    end
+
+    private function c takes nothing returns boolean
+        attackDat tempDat
+        if GetSpellAbilityId() == ATTACKDONROGOID
+            tempDat = new attackDat
+            tempDat.u = GetTriggerUnit()
+            tempDat.timeLeft = PAUSETIME
+            PauseUnit(tempDat.u, true)
+            IssueImmediateOrder(tempDat.u, "stop")
+            SetUnitAnimation(tempDat.u, "attack")
+            QueueUnitAnimation(tempDat.u, "stand")
+            dbIndex++
+            attackDB[dbIndex] = tempDat
+            if dbIndex == 0
+                TimerStart(time, FIDELITY, true, function p)
+            end
+        end
+        return false
+    end
+
+    private function delayedC takes nothing returns boolean
+        helper_soundInitialize(DAMAGESOUND)
+        return false
+    end
+
+    init
+        trigger t = CreateTrigger()
+        trigger delayed = CreateTrigger()
+        TriggerRegisterTimerEvent(delayed, 0., false)
+        TriggerAddCondition(delayed, Condition(function delayedC))
+        TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
+        TriggerAddCondition(t, Condition(function c))
+        delayed = null
+        t = null
+    end
+end

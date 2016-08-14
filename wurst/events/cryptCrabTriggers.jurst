@@ -1,0 +1,66 @@
+
+scope cryptCrabTriggers
+    globals
+        private constant int SPAWNMIN = 1
+        private constant int SPAWNMAX = 3
+        private constant int CRABID = 'h00G'
+        private constant real MINSPAWNDIST = 200.
+        private constant real MAXSPAWNDIST = 400.
+        private constant string EFFECTSTRING = "Abilities\\Spells\\Items\\AIil\\AIilTarget.mdl"
+    end
+
+    private function c takes nothing returns boolean
+        effect fx
+        int index = 0
+        int rand = GetRandomInt(SPAWNMIN, SPAWNMAX)
+        real randX
+        real randY
+        real dist
+        real ang
+        unit u
+        loop
+            exitwhen index > rand
+            ang = GetRandomReal(0., 2*bj_PI)
+            dist = GetRandomReal(MINSPAWNDIST, MAXSPAWNDIST)
+            randX = GetUnitX(units_donRogo) + dist*Cos(ang)
+            randY = GetUnitY(units_donRogo) + dist*Sin(ang)
+            u = CreateUnit(Player(1), CRABID, randX, randY, 270.)
+            SetUnitExploded(u, true)
+            fx = AddSpecialEffect(EFFECTSTRING, randX, randY)
+            DestroyEffect(fx)
+            index++
+        end
+        DisableTrigger(GetTriggeringTrigger())
+        fx = null
+        u = null
+        return false
+    end
+
+    init
+        trigger northWest = CreateTrigger()
+        trigger west = CreateTrigger()
+        trigger southWest = CreateTrigger()
+        trigger north = CreateTrigger()
+        trigger northEast = CreateTrigger()
+        trigger southEast = CreateTrigger()
+        boolexpr cond = Condition(function c)
+        TriggerRegisterEnterRectSimple(northWest, Rect(-2990., 1000., -1660., 1300.))
+        TriggerAddCondition(northWest, cond)
+        TriggerRegisterEnterRectSimple(west, Rect(-3000., -320., -1900., -100.))
+        TriggerAddCondition(west, cond)
+        TriggerRegisterEnterRectSimple(southWest, Rect(-1970., -2990., -1400., -2470.))
+        TriggerAddCondition(southWest, cond)
+        TriggerRegisterEnterRectSimple(north, Rect(-1000., 1800., -520., 2330.))
+        TriggerAddCondition(north, cond)
+        TriggerRegisterEnterRectSimple(northEast, Rect(1320., 730., 2760., 2470.))
+        TriggerAddCondition(northEast, cond)
+        TriggerRegisterEnterRectSimple(southEast, Rect(2310., -2270., 3000., -1870.))
+        TriggerAddCondition(southEast, Condition(function c))
+        northWest = null
+        west = null
+        southWest = null
+        north = null
+        northEast = null
+        southEast = null
+    end
+end

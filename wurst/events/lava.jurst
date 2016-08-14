@@ -1,0 +1,29 @@
+
+scope lava
+    globals
+        private constant real FIDELITY = 1./30.
+        private constant real DAMAGE = 400.*FIDELITY
+        private constant real MAXHEIGHTTODAMAGE = 25.
+        private constant string FIREMODEL = "Abilities\\Weapons\\FireBallMissile\\FireBallMissile.mdl"
+    end
+
+    private function c takes nothing returns boolean
+        effect fx
+        real uX = GetUnitX(units_donRogo)
+        real uY = GetUnitY(units_donRogo)
+        if GetTerrainType(uX, uY) == terrain_TYPE_LAVA and GetUnitFlyHeight(units_donRogo) < MAXHEIGHTTODAMAGE
+            UnitDamageTarget(units_gargonach, units_donRogo, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+            fx = AddSpecialEffect(FIREMODEL, uX, uY)
+            DestroyEffect(fx)
+            fx = null
+        end
+        return false
+    end
+
+    init
+        trigger t = CreateTrigger()
+        TriggerRegisterTimerEvent(t, FIDELITY, true)
+        TriggerAddCondition(t, Condition(function c))
+        t = null
+    end
+end

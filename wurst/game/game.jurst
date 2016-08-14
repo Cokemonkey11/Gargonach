@@ -1,0 +1,11 @@
+
+library game
+    globals
+        public constant int OBELISK_COUNT = 5
+        public boolean isOver = false
+        public quest killGargonach
+        public quest enableLights
+        public quest safePassage
+        public quest enableFountain
+    end
+end

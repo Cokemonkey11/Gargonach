@@ -1,0 +1,34 @@
+
+library fade
+    globals
+        private constant string BLACK_TEXTURE = "ReplaceableTextures\\CameraMasks\\Black_mask.blp"
+    end
+
+    public function out takes real time returns nothing
+        DestroyTimer(bj_cineFadeContinueTimer)
+        DestroyTimer(bj_cineFadeFinishTimer)
+        SetCineFilterTexture(BLACK_TEXTURE)
+        SetCineFilterBlendMode(BLEND_MODE_BLEND)
+        SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
+        SetCineFilterStartUV(0, 0, 1, 1)
+        SetCineFilterEndUV(0, 0, 1, 1)
+        SetCineFilterStartColor(0, 0, 0, 0)
+        SetCineFilterEndColor(0, 0, 0, 255)
+        SetCineFilterDuration(time)
+        DisplayCineFilter(true)
+    end
+
+    public function in takes real time returns nothing
+        DestroyTimer(bj_cineFadeContinueTimer)
+        DestroyTimer(bj_cineFadeFinishTimer)
+        SetCineFilterTexture(BLACK_TEXTURE)
+        SetCineFilterBlendMode(BLEND_MODE_BLEND)
+        SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
+        SetCineFilterStartUV(0, 0, 1, 1)
+        SetCineFilterEndUV(0, 0, 1, 1)
+        SetCineFilterStartColor(0, 0, 0, 255)
+        SetCineFilterEndColor(0, 0, 0, 0)
+        SetCineFilterDuration(time)
+        DisplayCineFilter(true)
+    end
+end

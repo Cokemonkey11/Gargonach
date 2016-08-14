@@ -1,0 +1,40 @@
+
+scope lighthopping
+    globals
+        private constant int LIGHTHOPPINGID = 'A007'
+        private constant real FIRSTHOPPOWER = 25.
+        private constant real SECONDHOPPOWER = 23.
+        private constant real DELAY = .6
+        private real tX
+        private real tY
+        private timer time = CreateTimer()
+    end
+
+    private function p()
+        effect fx = AddSpecialEffectTarget(helper_FLASHMODEL, units_donRogo, "origin")
+        DestroyEffect(fx)
+        fx = null
+        knockback_add(units_donRogo, SECONDHOPPOWER, Atan2(GetUnitY(units_donRogo)-tY, GetUnitX(units_donRogo)-tX), 7*bj_PI/8)
+    end
+
+    private function c takes nothing returns boolean
+        effect fx
+        if GetSpellAbilityId() == LIGHTHOPPINGID
+            tX = GetSpellTargetX()
+            tY = GetSpellTargetY()
+            fx = AddSpecialEffect(helper_FLASHMODEL, GetUnitX(units_donRogo), GetUnitY(units_donRogo))
+            DestroyEffect(fx)
+            fx = null
+            knockback_add(units_donRogo, FIRSTHOPPOWER, 0., bj_PI/2)
+            TimerStart(time, DELAY, false, function p)
+        end
+        return false
+    end
+
+    init
+        trigger t = CreateTrigger()
+        TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
+        TriggerAddCondition(t, Condition(function c))
+        t = null
+    end
+end

@@ -1,0 +1,120 @@
+
+scope hammerthrow
+    globals
+        private constant int HAMMERTHROW = 'A000'
+        private constant int ATTACKID = 'A002'
+        private constant int HAMMERID = 'h006'
+        private constant real FIDELITY = 1./30.
+        private constant real SPEED = 1400.*FIDELITY
+        private constant real STARTHEIGHT = 150.
+        private constant real GRAVITY = 1.
+        private constant real ENUMRAD = 150.
+        private constant real DAMAGE = 150.
+        private constant real MINFLYHEIGHT = 5.
+        private constant real TIMEOUT = 10.
+        private constant string STORMBOLTMODEL = "Abilities\\Spells\\Human\\StormBolt\\StormBoltMissile.mdl"
+        private boolexpr cond
+        private real vX
+        private real vY
+        private real vZ
+        private timer time = CreateTimer()
+        private group grp = CreateGroup()
+    end
+
+    private function tempC takes nothing returns boolean
+        unit tU = GetTriggerUnit()
+        if tU == units_donRogo or tU == null
+            PauseUnit(units_hammer, false)
+            ShowUnit(units_hammer, false)
+            UnitAddAbility(units_donRogo, HAMMERTHROW)
+            UnitAddAbility(units_donRogo, ATTACKID)
+            DestroyTrigger(GetTriggeringTrigger())
+        end
+        tU = null
+        return false
+    end
+
+    private function p()
+        boolean damaged = false
+        effect fx
+        real currX = GetUnitX(units_hammer)
+        real currY = GetUnitY(units_hammer)
+        real currZ = helper_getZ(currX, currY)
+        real targX = currX + vX
+        real targY = currY + vY
+        real targZ = helper_getZ(targX, targY)
+        real diffZ = targZ-currZ
+        unit fst
+        trigger tTemp
+        SetUnitFlyHeight(units_hammer, GetUnitFlyHeight(units_hammer)-diffZ + vZ, 0.)
+        vZ = vZ-GRAVITY
+        SetUnitX(units_hammer, targX)
+        SetUnitY(units_hammer, targY)
+        GroupEnumUnitsInRange(grp, targX, targY, ENUMRAD, null)
+        loop
+            fst = FirstOfGroup(grp)
+            exitwhen fst == null or damaged
+            if IsUnitEnemy(fst, Player(0)) and GetUnitState(fst, UNIT_STATE_LIFE)>=1
+                damaged = true
+                if GetUnitTypeId(fst) != units_LAVAWELLID and fst != units_sandMill
+                    UnitDamageTarget(units_hammer, fst, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                end
+            end
+            GroupRemoveUnit(grp, fst)
+        end
+        if damaged or GetUnitFlyHeight(units_hammer) < MINFLYHEIGHT
+            fx = AddSpecialEffect(STORMBOLTMODEL, GetUnitX(units_hammer), GetUnitY(units_hammer))
+            DestroyEffect(fx)
+            fx = null
+            PauseTimer(time)
+            UnitRemoveAbility(units_hammer, 'Aloc')
+            tTemp = CreateTrigger()
+            TriggerRegisterUnitInRange(tTemp, units_hammer, 150., null)
+            TriggerRegisterTimerEvent(tTemp, TIMEOUT, false)
+            TriggerAddCondition(tTemp, cond)
+            PauseUnit(units_hammer, true)
+            tTemp = null
+        end
+    end
+
+    private function c takes nothing returns boolean
+        unit tU
+        real ang
+        real uX
+        real uY
+        if GetSpellAbilityId() == HAMMERTHROW
+            tU = GetTriggerUnit()
+            uX = GetUnitX(tU)
+            uY = GetUnitY(tU)
+            SetUnitX(units_hammer, uX)
+            SetUnitY(units_hammer, uY)
+            ang = Atan2(GetSpellTargetY()-uY, GetSpellTargetX()-uX)
+            vX = SPEED*Cos(ang)
+            vY = SPEED*Sin(ang)
+            vZ = 0.
+            UnitRemoveAbility(units_donRogo, ATTACKID)
+            UnitRemoveAbility(units_donRogo, HAMMERTHROW)
+            ShowUnit(units_hammer, true)
+            PauseUnit(units_hammer, false)
+            SetUnitFacing(units_hammer, ang*bj_RADTODEG)
+            SetUnitFlyHeight(units_hammer, STARTHEIGHT, 0.)
+            TimerStart(time, FIDELITY, true, function p)
+            tU = null
+        end
+        return false
+    end
+
+    init
+        trigger t = CreateTrigger()
+        cond = Condition(function tempC)
+        units_hammer = CreateUnit(Player(0), HAMMERID, 0., 0., 270.)
+        UnitAddAbility(units_hammer, units_LOCUSTID)
+        UnitAddAbility(units_hammer, 'Arav')
+        UnitRemoveAbility(units_hammer, 'Arav')
+        SetUnitInvulnerable(units_hammer, true)
+        ShowUnit(units_hammer, false)
+        TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
+        TriggerAddCondition(t, Condition(function c))
+        t = null
+    end
+end

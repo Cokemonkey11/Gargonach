@@ -1,0 +1,119 @@
+
+library helper requires terrain
+    globals
+        private constant real TTVEL = 40.
+        private location loc = Location(0, 0)
+        private string array playerColors
+        public constant string BANISHSOUND = "Abilities\\Spells\\Human\\Banish\\BanishCaster.wav"
+        public constant string DUSTMODEL = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl"
+        public constant string SECRETFOUND = "Sound\\Interface\\SecretFound.wav"
+        public constant string FLASHMODEL = "Abilities\\Spells\\Human\\HolyBolt\\HolyBoltSpecialArt.mdl"
+        public string array ghoulSounds[2]
+    end
+
+    public function getZ takes real x, real y returns real
+        MoveLocation(loc, x, y)
+        return GetLocationZ(loc)
+    end
+
+    public function normalizeAngle takes real rad returns real
+        loop
+            exitwhen rad < bj_PI
+            rad = rad-bj_PI*2
+        end
+        loop
+            exitwhen rad > -1*bj_PI
+            rad = rad + bj_PI*2
+        end
+        return rad
+    end
+
+    public function sound3d takes string what, real x, real y, real z returns nothing
+        sound snd = CreateSound(what, false, true, false, 12700, 12700, "")
+        SetSoundPosition(snd, x, y, z)
+        SetSoundVolume(snd, 127)
+        StartSound(snd)
+        KillSoundWhenDone(snd)
+        snd = null
+    end
+
+    public function globalSound takes string what, int volume returns nothing //note volume should be between 0 and 127
+        sound snd = CreateSound(what, false, false, false, 12700, 12700, "")
+        SetSoundVolume(snd, volume)
+        StartSound(snd)
+        KillSoundWhenDone(snd)
+        snd = null
+    end
+
+    public function quickTTAll takes string s, real x, real y, real rad returns nothing
+        texttag t = CreateTextTag()
+        SetTextTagColor(t, 200, 200, 200, 200)
+        SetTextTagLifespan(t, 2.)
+        SetTextTagFadepoint(t, 1.)
+        SetTextTagPermanent(t, false)
+        SetTextTagPos(t, x, y, 25.)
+        SetTextTagText(t, s, 12.*.0023)
+        SetTextTagVelocity(t, TTVEL*Cos(rad)*.071/128., TTVEL*Sin(rad)*.071/128.)
+        SetTextTagVisibility(t, true)
+    end
+
+    public function soundInitialize takes string s returns nothing
+        sound snd = CreateSound(s, false, false, false, 12700, 12700, "")
+        SetSoundVolume(snd, 1)
+        StartSound(snd)
+        KillSoundWhenDone(snd)
+        snd = null
+    end
+
+    public function isInMap takes real x, real y returns boolean
+        return (x < terrain_MAX_X and x > terrain_MIN_X and y > terrain_MIN_Y and y < terrain_MAX_Y)
+    end
+
+    scope light
+        public class lightDat
+            lightning light
+            real timeLeft
+            real startTime
+        end
+
+        globals
+            public constant real FIDELITY = 1./30.
+            public timer time = CreateTimer()
+            public int stackIndex = -1
+            public lightDat array lightDB
+        end
+
+        public function p()
+            int index = 0
+            lightDat tempDat
+            loop
+                exitwhen index > stackIndex
+                tempDat = lightDB[index]
+                tempDat.timeLeft = tempDat.timeLeft-FIDELITY
+                SetLightningColor(tempDat.light, 1., 1., 1., tempDat.timeLeft/tempDat.startTime)
+                if tempDat.timeLeft < 0.
+                    DestroyLightning(tempDat.light)
+                    destroy tempDat
+                    lightDB[index] = lightDB[stackIndex]
+                    stackIndex--
+                    if stackIndex == -1
+                        PauseTimer(time)
+                    end
+                end
+                index++
+            end
+        end
+    end
+
+    public function tempLightning takes string typ, real duration, real xS, real yS, real zS, real xF, real yF, real zF returns nothing
+        light_lightDat tempDat = new light_lightDat
+        tempDat.light = AddLightningEx(typ, false, xS, yS, getZ(xS, yS) + zS, xF, yF, getZ(xF, yF) + zF)
+        tempDat.timeLeft = duration
+        tempDat.startTime = duration
+        light_stackIndex = light_stackIndex + 1
+        light_lightDB[light_stackIndex] = tempDat
+        if light_stackIndex == 0
+            TimerStart(light_time, light_FIDELITY, true, function light_p)
+        end
+    end
+end

@@ -1,0 +1,75 @@
+
+library terrain
+    class mapCellData
+        int previousType
+        real timeLeft
+        real x
+        real y
+    end
+
+    globals
+        public constant real MAX_X = 3300.
+        public constant real MAX_Y = 3070.
+        public constant real MIN_X = -3300.
+        public constant real MIN_Y = -3570.
+        public constant real STARTX = -2560.
+        public constant real STARTY = 2560.
+        private constant int TERRAIN_VARIATION_RANDOM = -1
+        private constant int TERRAIN_SHAPE_CIRCLE = 0
+        private constant real FIDELITY = 1./30. //Use 1/r where r is the effective frames per second cap of the temporary terrain modification
+        public int TYPE_COBBLESTONE
+        public int TYPE_WHITEMARBLE
+        public int TYPE_LAVA
+        public int TYPE_SAND
+        public int TYPE_GRASS
+        private timer time = CreateTimer()
+        private mapCellData array cellStack
+        private int cellStackI = -1
+    end
+
+    private function p()
+        int index = 0
+        mapCellData tempDat
+        loop
+            exitwhen index > cellStackI
+            tempDat = cellStack[index]
+            tempDat.timeLeft = tempDat.timeLeft-FIDELITY
+            if tempDat.timeLeft < 0.
+                SetTerrainType(tempDat.x, tempDat.y, tempDat.previousType, TERRAIN_VARIATION_RANDOM, 1, TERRAIN_SHAPE_CIRCLE)
+                destroy tempDat
+                cellStack[index] = cellStack[cellStackI]
+                cellStackI--
+                if cellStackI == -1
+                    PauseTimer(time)
+                end
+            end
+            index++
+        end
+    end
+
+    public function permModify takes real x, real y, int terrainType, int size returns nothing
+        SetTerrainType(x, y, terrainType, TERRAIN_VARIATION_RANDOM, size, TERRAIN_SHAPE_CIRCLE)
+    end
+
+    public function tempModify takes real x, real y, real duration, int terrainType returns nothing
+        mapCellData tempDat = new mapCellData
+        tempDat.previousType = GetTerrainType(x, y)
+        tempDat.timeLeft = duration
+        tempDat.x = x
+        tempDat.y = y
+        cellStackI++
+        cellStack[cellStackI] = tempDat
+        SetTerrainType(x, y, terrainType, TERRAIN_VARIATION_RANDOM, 1, TERRAIN_SHAPE_CIRCLE)
+        if cellStackI == 0
+            TimerStart(time, FIDELITY, true, function p)
+        end
+    end
+
+    init
+        TYPE_COBBLESTONE = GetTerrainType(-3580., -3970.)
+        TYPE_WHITEMARBLE = GetTerrainType(-3460., -3960.)
+        TYPE_LAVA = GetTerrainType(-3330., -3970.)
+        TYPE_SAND = GetTerrainType(-2820., -3970.)
+        TYPE_GRASS = GetTerrainType(-3210., -3970.)
+    end
+end
