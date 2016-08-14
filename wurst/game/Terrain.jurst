@@ -1,5 +1,5 @@
 
-library terrain
+package Terrain
     class mapCellData
         int previousType
         real timeLeft

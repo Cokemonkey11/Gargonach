@@ -1,5 +1,5 @@
 
-library fade
+package Fade
     globals
         private constant string BLACK_TEXTURE = "ReplaceableTextures\\CameraMasks\\Black_mask.blp"
     end

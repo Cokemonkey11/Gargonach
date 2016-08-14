@@ -1,5 +1,5 @@
 
-scope init
+package Init
     globals
         private constant int SANDMILLID = 'h004'
         private constant int SANDKEGID = 'h005'

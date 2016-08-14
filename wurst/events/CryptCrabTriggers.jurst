@@ -1,5 +1,5 @@
 
-scope cryptCrabTriggers
+package CryptCrabTriggers
     globals
         private constant int SPAWNMIN = 1
         private constant int SPAWNMAX = 3

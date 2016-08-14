@@ -1,5 +1,5 @@
 
-scope gargonachDeath
+package GargonachDeath
     globals
         private constant string GOODJOB = "Sound\\Interface\\GoodJob.wav"
     end

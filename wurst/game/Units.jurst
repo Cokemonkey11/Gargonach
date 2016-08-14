@@ -1,5 +1,5 @@
 
-library units
+package Units
     class pauseDat
         unit u
         real timeLeft

@@ -1,5 +1,5 @@
 
-scope use
+package Use
     globals
         private constant int USEID = 'A001'
         private constant int LIGHTID = 'h003'

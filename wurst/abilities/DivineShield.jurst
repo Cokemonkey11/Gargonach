@@ -1,5 +1,5 @@
 
-scope divineShield
+package DivineShield
     globals
         private constant int DIVINESHIELDID = 'A005'
         private constant real DISTANCE = 250.

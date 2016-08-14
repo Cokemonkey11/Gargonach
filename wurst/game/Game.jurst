@@ -1,5 +1,5 @@
 
-library game
+package Game
     globals
         public constant int OBELISK_COUNT = 5
         public boolean isOver = false

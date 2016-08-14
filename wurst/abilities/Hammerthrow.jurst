@@ -1,5 +1,5 @@
 
-scope hammerthrow
+package Hammerthrow
     globals
         private constant int HAMMERTHROW = 'A000'
         private constant int ATTACKID = 'A002'

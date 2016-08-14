@@ -1,5 +1,5 @@
 
-scope sandMillDeath
+package SandMillDeath
     globals
         private constant int DUSTCOUNT = 10
         private constant string DUSTMODEL = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl"

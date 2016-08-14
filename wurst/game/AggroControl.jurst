@@ -1,5 +1,9 @@
 
-library aggroControl initializer i requires units, game, lavawells
+package AggroControl
+	import Units
+	import Game
+	import Lavawells
+
     class amountDat
         int amount
         real timeLeft
@@ -108,7 +112,7 @@ library aggroControl initializer i requires units, game, lavawells
         return false
     end
 
-    private function i()
+    init
         trigger t = CreateTrigger()
         radOffs = GetRandomReal(0., bj_PI*2)
         TriggerRegisterTimerEvent(t, FIDELITY, true)

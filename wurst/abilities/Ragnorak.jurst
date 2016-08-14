@@ -1,5 +1,5 @@
 
-scope ragnorak initializer i //note the hammer should face PI radians past the direction it travels.
+package Ragnorak
     globals
         private constant int RAGNORAKID = 'A004'
         private constant int HAMMERID = 'h00A'
@@ -107,7 +107,7 @@ scope ragnorak initializer i //note the hammer should face PI radians past the d
         return false
     end
 
-    private function i()
+    init
         trigger t = CreateTrigger()
         trigger delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)

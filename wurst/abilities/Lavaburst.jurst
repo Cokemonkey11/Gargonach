@@ -1,5 +1,5 @@
 
-scope lavaburst
+package Lavaburst
     globals
         private constant int LAVABURSTID = 'A003'
 

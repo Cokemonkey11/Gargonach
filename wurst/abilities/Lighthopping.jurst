@@ -1,5 +1,5 @@
 
-scope lighthopping
+package Lighthopping
     globals
         private constant int LIGHTHOPPINGID = 'A007'
         private constant real FIRSTHOPPOWER = 25.

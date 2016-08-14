@@ -1,5 +1,9 @@
 
-library lavawells initializer i requires helper, knockback, game
+package Lavawells
+	import Helper
+	import Knockback3
+	import Game
+
     class lavae
         unit ball
         string state
@@ -250,7 +254,7 @@ library lavawells initializer i requires helper, knockback, game
         return false
     end
 
-    private function i()
+    init
         trigger t = CreateTrigger()
         TriggerRegisterTimerEvent(t, FIDELITY, true)
         TriggerAddCondition(t, Condition(function c))

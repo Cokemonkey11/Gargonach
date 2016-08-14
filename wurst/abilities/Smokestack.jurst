@@ -1,5 +1,5 @@
 
-scope smokestack initializer i //note the hammer should face PI radians past the direction it travels.
+package Smokestack
     globals
         private constant int SMOKESTACKID = 'A006'
         private constant int LAUNCHSMOKECOUNT = 15
@@ -82,7 +82,7 @@ scope smokestack initializer i //note the hammer should face PI radians past the
         return false
     end
 
-    private function i()
+    init
         trigger t = CreateTrigger()
         trigger delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)

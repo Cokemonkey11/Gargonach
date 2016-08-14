@@ -1,5 +1,7 @@
 
-library helper requires terrain
+package Helper
+	import Terrain
+
     globals
         private constant real TTVEL = 40.
         private location loc = Location(0, 0)

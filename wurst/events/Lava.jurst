@@ -1,5 +1,5 @@
 
-scope lava
+package Lava
     globals
         private constant real FIDELITY = 1./30.
         private constant real DAMAGE = 400.*FIDELITY
