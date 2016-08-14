@@ -1,0 +1,133 @@
+package RogoDeath
+    import Fx
+    import Helper
+    import TerrainMod
+    import Units
+    import UnitObjEditing
+
+    constant ID_VISION_DUMMY = '!vdm' 
+    constant PARTICLESCOUNT  = 15 //Count from 0.
+
+    constant FIDELITY              = 1./30.
+    constant LIGHTBURSTTIME        = 2.
+    constant FINISHEDEXPLOSIONTIME = LIGHTBURSTTIME + 2.
+    constant PARTICLESTARTHEIGHT   = 800.
+    constant TARGETHEIGHT          = 75.
+    constant EXPLODESPEED          = 900.*FIDELITY
+    constant EXPLODESLOWDOWNRATE   = 1.-(.3/4.) + (.1/8.)
+    constant RETURNSPEED           = 400.*FIDELITY
+    constant REACHEDDIST           = 100.
+
+    constant PATH_PARTICLE = "Abilities\\Weapons\\FaerieDragonMissile\\FaerieDragonMissile.mdl"
+
+    var ready = false
+    bool array visible
+    constant time = CreateTimer()
+    var timeElapsed = 0.
+    var steps   = 0
+    var opacity = 0
+    Fx   array lightParticles
+    vec2 array particleVel
+
+    unit visionDummy
+    vec2 deadPos
+    real returnedCount
+
+    function p()
+        real direction
+        real dX
+        real dY
+        real distance
+        timeElapsed = timeElapsed + FIDELITY
+        if timeElapsed > 0. and timeElapsed < LIGHTBURSTTIME
+            if visible[0] == false
+                visible[0] = true
+                deadPos = donRogo.getPos()
+                lightParticles[0] = new Fx(deadPos, angle(0.), PATH_PARTICLE)
+                lightParticles[0].setZ(PARTICLESTARTHEIGHT)
+                visionDummy = createUnit(Player(0), ID_VISION_DUMMY, deadPos, angle(0.))
+
+            lightParticles[0].setZ(PARTICLESTARTHEIGHT-(timeElapsed/LIGHTBURSTTIME)*(PARTICLESTARTHEIGHT-TARGETHEIGHT))
+            SetUnitVertexColor(donRogo, 255, 255, 255, R2I(255-(timeElapsed/LIGHTBURSTTIME)*255))
+        else if timeElapsed > LIGHTBURSTTIME and timeElapsed < FINISHEDEXPLOSIONTIME
+            if visible[1] == false
+                for i = 0 to PARTICLESCOUNT
+                    if not i == 0
+                        lightParticles[i] = new Fx(deadPos, angle(0.), PATH_PARTICLE)
+                        visible[i] = true
+                    lightParticles[i].setXY(deadPos)
+                    particleVel[i] = vec2(0., 0.).polarOffset(angle(i * 2. * bj_PI / (PARTICLESCOUNT + 1)), EXPLODESPEED)
+
+                addEffect(FLASHMODEL, deadPos).destr()
+                returnedCount = 0
+
+            RemoveUnit(donRogo)
+            for i = 0 to PARTICLESCOUNT
+                lightParticles[i].setXY(lightParticles[i].getPos2() + particleVel[i])
+                particleVel[i] = particleVel[i] * EXPLODESLOWDOWNRATE
+
+            donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
+            donRogo..setVertexColor(255, 255, 255, 0)
+                   ..hide()
+                   ..pause()
+                   ..setTimeScale(0.)
+        else if timeElapsed > FINISHEDEXPLOSIONTIME and ready == false
+            if visible[0]
+                visionDummy.setPos(lightParticles[0].getPos2())
+
+            for i = 0 to PARTICLESCOUNT
+                if visible[i]
+                    let pos = lightParticles[i].getPos2()
+                    direction = Atan2(STARTY - pos.y, STARTX - pos.x)
+                    lightParticles[i].setPos(pos.x + RETURNSPEED*Cos(direction), pos.y + RETURNSPEED*Sin(direction))
+                    dX = pos.x - STARTX
+                    dY = pos.y - STARTY
+                    distance = SquareRoot(dX*dX + dY*dY)
+                    if distance < REACHEDDIST
+                        returnedCount++
+                        if returnedCount == 1
+                            donRogo..show()..addAbility('Aloc')
+
+                        destroy lightParticles[i]
+                        visionDummy.remove()
+                        visible[i] = false
+                        SetUnitVertexColor(donRogo, 255, 255, 255, R2I(returnedCount*255/(PARTICLESCOUNT + 1)))
+                        AddSpecialEffect(FLASHMODEL, STARTX, STARTY).destr()
+                        if returnedCount > PARTICLESCOUNT
+                            ready = true
+
+        else
+            PauseTimer(time)
+            RemoveUnit(donRogo)
+            donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
+            Player(0).selectSingle(donRogo)
+
+
+    function c() returns bool
+        if GetTriggerUnit() == donRogo
+            timeElapsed = 0.
+            ready = false
+            TimerStart(time, FIDELITY, true, function p)
+
+        return false
+
+
+    init
+        trigger t = CreateTrigger()
+        TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH)
+        TriggerAddCondition(t, Condition(function c))
+
+
+    class VisionDummyDefinition extends UnitDefinition
+        construct(int id)
+            super(id, 'ushd')
+            setModelFile("dummy.mdl")
+            setFoodCost(0)
+            setName("Vision Dumm")
+            setMovementHeight(1000.)
+            setMovementHeightMinimum(1000.)
+            setShadowImageUnit("")
+
+
+    @compiletime function createVisionDummy()
+        new VisionDummyDefinition(ID_VISION_DUMMY)
