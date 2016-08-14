@@ -1,30 +1,30 @@
-
 package Lavaburst
-    globals
-        private constant int LAVABURSTID = 'A003'
+    import Helper
+    import Lavawells
+    import Units
 
-    end
+    constant LAVABURSTID = 'A003'
 
-    private function c takes nothing returns boolean
+    function c takes nothing returns bool
         int index = 0
         real uX
         real uY
         if GetSpellAbilityId() == LAVABURSTID
-            uX = GetUnitX(units_gargonach)
-            uY = GetUnitY(units_gargonach)
-            helper_sound3d(helper_ghoulSounds[GetRandomInt(0, 2)], uX, uY, 50.)
-            lavawells_attack()
+            uX = GetUnitX(gargonach)
+            uY = GetUnitY(gargonach)
+            sound3d(ghoulSounds[GetRandomInt(0, 2)], uX, uY, 50.)
+            attack()
         end
         return false
     end
 
-    private function delayedC takes nothing returns boolean
-        helper_ghoulSounds[0] = "Units\\Undead\\Ghoul\\GhoulWarcry1.wav"
-        helper_ghoulSounds[1] = "Units\\Undead\\Ghoul\\GhoulWhat1.wav"
-        helper_ghoulSounds[2] = "Units\\Undead\\Ghoul\\GhoulWhat3.wav"
-        helper_soundInitialize(helper_ghoulSounds[0])
-        helper_soundInitialize(helper_ghoulSounds[1])
-        helper_soundInitialize(helper_ghoulSounds[2])
+    function delayedC takes nothing returns bool
+        ghoulSounds[0] = "Units\\Undead\\Ghoul\\GhoulWarcry1.wav"
+        ghoulSounds[1] = "Units\\Undead\\Ghoul\\GhoulWhat1.wav"
+        ghoulSounds[2] = "Units\\Undead\\Ghoul\\GhoulWhat3.wav"
+        soundInitialize(ghoulSounds[0])
+        soundInitialize(ghoulSounds[1])
+        soundInitialize(ghoulSounds[2])
         return false
     end
 
@@ -33,9 +33,6 @@ package Lavaburst
         trigger delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
-        delayed = null
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
         TriggerAddCondition(t, Condition(function c))
-        t = null
     end
-end

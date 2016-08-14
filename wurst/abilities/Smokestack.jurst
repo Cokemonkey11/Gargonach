@@ -1,75 +1,75 @@
-
 package Smokestack
-    globals
-        private constant int SMOKESTACKID = 'A006'
-        private constant int LAUNCHSMOKECOUNT = 15
-        private constant real FIDELITY = 1./30.
-        private constant real CHANNELTIME = .75
-        private constant real RADIUS = 180.
-        private constant real DAMAGE = 100.
-        private constant string LAUNCHSOUND = "Abilities\\Spells\\Human\\Defend\\DefendCaster.wav"
-        private constant string IMPALESTRING = "Abilities\\Spells\\Undead\\Impale\\ImpaleMissTarget.mdl"
-        private boolean warningShown
-        private group grp = CreateGroup()
-        private timer time = CreateTimer()
-        private real tX
-        private real tY
-        private real uY
-        private real uX
-        private real timeElapsed
-    end
+    import Helper
+    import Knockback3
+    import Units
 
-    private function p()
+    constant SMOKESTACKID     = 'A006'
+    constant LAUNCHSMOKECOUNT = 15
+
+    constant FIDELITY    =   1./30.
+    constant CHANNELTIME =    .75
+    constant RADIUS      = 180.
+    constant DAMAGE      = 100.
+
+    constant LAUNCHSOUND  = "Abilities\\Spells\\Human\\Defend\\DefendCaster.wav"
+    constant IMPALESTRING = "Abilities\\Spells\\Undead\\Impale\\ImpaleMissTarget.mdl"
+
+    bool warningShown
+    group grp = CreateGroup()
+    timer time = CreateTimer()
+    real tX
+    real tY
+    real uY
+    real uX
+    real timeElapsed
+
+    function p()
         int index = 0
         effect fx
         unit fst
         timeElapsed = timeElapsed + FIDELITY
         if timeElapsed > 0. and timeElapsed < CHANNELTIME
-            if GetUnitCurrentOrder(units_gargonach) != OrderId("deathanddecay")
+            if GetUnitCurrentOrder(gargonach) != OrderId("deathanddecay")
                 PauseTimer(time)
-                helper_quickTTAll("Interrupted!", GetUnitX(units_gargonach), GetUnitY(units_gargonach), bj_PI/2)
+                quickTTAll("Interrupted!", GetUnitX(gargonach), GetUnitY(gargonach), bj_PI/2)
             else
                 if warningShown == false
-                    fx = AddSpecialEffect(helper_DUSTMODEL, tX, tY)
+                    fx = AddSpecialEffect(DUSTMODEL, tX, tY)
                     DestroyEffect(fx)
                     warningShown = true
-                    helper_sound3d(helper_ghoulSounds[GetRandomInt(0, 2)], uX, uY, 50.)
+                    sound3d(ghoulSounds[GetRandomInt(0, 2)], uX, uY, 50.)
                 end
             end
         else
             loop
                 exitwhen index > LAUNCHSMOKECOUNT
-                fx = AddSpecialEffect(helper_DUSTMODEL, tX + RADIUS*3/4*Cos(index*2*bj_PI/(LAUNCHSMOKECOUNT + 1)), tY + RADIUS*3/4*Sin(index*2*bj_PI/(LAUNCHSMOKECOUNT + 1)))
-                DestroyEffect(fx)
-                fx = null
+                AddSpecialEffect(DUSTMODEL, tX + RADIUS*3/4*Cos(index*2*bj_PI/(LAUNCHSMOKECOUNT + 1)), tY + RADIUS*3/4*Sin(index*2*bj_PI/(LAUNCHSMOKECOUNT + 1))).destr()
                 index++
             end
-            helper_sound3d(LAUNCHSOUND, tX, tY, helper_getZ(tX, tY))
-            helper_sound3d(helper_ghoulSounds[GetRandomInt(0, 2)], uX, uY, 50.)
+            sound3d(LAUNCHSOUND, tX, tY, getZ(tX, tY))
+            sound3d(ghoulSounds[GetRandomInt(0, 2)], uX, uY, 50.)
             GroupEnumUnitsInRange(grp, tX, tY, RADIUS, null)
             loop
                 fst = FirstOfGroup(grp)
                 exitwhen fst == null
-                if fst == units_donRogo
-                    UnitDamageTarget(units_gargonach, fst, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-                    knockback_add(fst, DAMAGE/2.5, 0., bj_PI/2)
+                if fst == donRogo
+                    UnitDamageTarget(gargonach, fst, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                    Knockback3.add(fst, 1300., angle(0.), angle(bj_PI/2))
                     fx = AddSpecialEffect(IMPALESTRING, GetUnitX(fst), GetUnitY(fst))
                     DestroyEffect(fx)
-                    fx = null
                 end
                 GroupRemoveUnit(grp, fst)
             end
             PauseTimer(time)
         end
-        fx = null
     end
 
-    private function c takes nothing returns boolean
+    function c takes nothing returns bool
         if GetSpellAbilityId() == SMOKESTACKID
             tX = GetSpellTargetX()
             tY = GetSpellTargetY()
-            uX = GetUnitX(units_gargonach)
-            uY = GetUnitY(units_gargonach)
+            uX = GetUnitX(gargonach)
+            uY = GetUnitY(gargonach)
             timeElapsed = 0.
             warningShown = false
             TimerStart(time, FIDELITY, true, function p)
@@ -77,8 +77,8 @@ package Smokestack
         return false
     end
 
-    private function delayedC takes nothing returns boolean
-        helper_soundInitialize(LAUNCHSOUND)
+    function delayedC takes nothing returns bool
+        soundInitialize(LAUNCHSOUND)
         return false
     end
 
@@ -87,9 +87,6 @@ package Smokestack
         trigger delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
-        delayed = null
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
         TriggerAddCondition(t, Condition(function c))
-        t = null
     end
-end

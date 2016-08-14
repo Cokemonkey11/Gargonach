@@ -1,33 +1,35 @@
-
 package RogoDeath
-    globals
-        private constant int PARTICLESCOUNT = 15 //Count from 0.
-        private constant int PARTICLEID = 'h009'
-        private constant real FIDELITY = 1./30.
-        private constant real LIGHTBURSTTIME = 2.
-        private constant real FINISHEDEXPLOSIONTIME = LIGHTBURSTTIME + 2.
-        private constant real PARTICLESTARTHEIGHT = 800.
-        private constant real TARGETHEIGHT = 75.
-        private constant real EXPLODESPEED = 900.*FIDELITY
-        private constant real EXPLODESLOWDOWNRATE = 1.-(.3/4.) + (.1/8.)
-        private constant real RETURNSPEED = 400.*FIDELITY
-        private constant real REACHEDDIST = 100.
-        private boolean ready = false
-        private boolean array visible[PARTICLESCOUNT]
-        private timer time = CreateTimer()
-        private real timeElapsed = 0.
-        private int steps = 0
-        private int opacity = 0
-        private unit array lightParticles[PARTICLESCOUNT]
-        private real array particleVx[PARTICLESCOUNT]
-        private real array particleVy[PARTICLESCOUNT]
-        private real deadX
-        private real deadY
-        private real returnedCount
-    end
+    import Helper
+    import TerrainMod
+    import Units
 
-    private function p()
-        effect fx
+    constant PARTICLESCOUNT = 15 //Count from 0.
+    constant PARTICLEID = 'h009'
+
+    constant FIDELITY              = 1./30.
+    constant LIGHTBURSTTIME        = 2.
+    constant FINISHEDEXPLOSIONTIME = LIGHTBURSTTIME + 2.
+    constant PARTICLESTARTHEIGHT   = 800.
+    constant TARGETHEIGHT          = 75.
+    constant EXPLODESPEED          = 900.*FIDELITY
+    constant EXPLODESLOWDOWNRATE   = 1.-(.3/4.) + (.1/8.)
+    constant RETURNSPEED           = 400.*FIDELITY
+    constant REACHEDDIST           = 100.
+
+    var ready = false
+    bool array visible
+    constant time = CreateTimer()
+    var timeElapsed = 0.
+    var steps = 0
+    var opacity = 0
+    unit array lightParticles
+    real array particleVx
+    real array particleVy
+    real deadX
+    real deadY
+    real returnedCount
+
+    function p()
         int index = 0
         real tempX
         real tempY
@@ -41,14 +43,14 @@ package RogoDeath
                 ShowUnit(lightParticles[0], true)
                 UnitAddAbility(lightParticles[0], 'Aloc')
                 visible[0] = true
-                deadX = GetUnitX(units_donRogo)
-                deadY = GetUnitY(units_donRogo)
+                deadX = GetUnitX(donRogo)
+                deadY = GetUnitY(donRogo)
                 SetUnitX(lightParticles[0], deadX)
                 SetUnitY(lightParticles[0], deadY)
                 SetUnitFlyHeight(lightParticles[0], PARTICLESTARTHEIGHT, 0.)
             end
             SetUnitFlyHeight(lightParticles[0], PARTICLESTARTHEIGHT-(timeElapsed/LIGHTBURSTTIME)*(PARTICLESTARTHEIGHT-TARGETHEIGHT), 0.)
-            SetUnitVertexColor(units_donRogo, 255, 255, 255, R2I(255-(timeElapsed/LIGHTBURSTTIME)*255))
+            SetUnitVertexColor(donRogo, 255, 255, 255, R2I(255-(timeElapsed/LIGHTBURSTTIME)*255))
         elseif timeElapsed > LIGHTBURSTTIME and timeElapsed < FINISHEDEXPLOSIONTIME
             if visible[1] == false
                 loop
@@ -62,12 +64,10 @@ package RogoDeath
                     particleVy[index] = EXPLODESPEED*Sin(index*2*bj_PI/(PARTICLESCOUNT + 1))
                     index++
                 end
-                fx = AddSpecialEffect(helper_FLASHMODEL, deadX, deadY)
-                DestroyEffect(fx)
-                fx = null
+                AddSpecialEffect(FLASHMODEL, deadX, deadY).destr()
                 returnedCount = 0
             end
-            RemoveUnit(units_donRogo)
+            RemoveUnit(donRogo)
             index = 0
             loop
                 exitwhen index > PARTICLESCOUNT
@@ -77,12 +77,12 @@ package RogoDeath
                 particleVy[index] = particleVy[index]*EXPLODESLOWDOWNRATE
                 index++
             end
-            units_donRogo = CreateUnit(Player(0), units_HEROID, terrain_STARTX, terrain_STARTY, 270.)
-            SetUnitVertexColor(units_donRogo, 255, 255, 255, 0)
-            ShowUnit(units_donRogo, false)
-            PauseUnit(units_donRogo, true)
-            UnitAddAbility(units_donRogo, 'Aloc')
-            SetUnitTimeScale(units_donRogo, 0.)
+            donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
+            SetUnitVertexColor(donRogo, 255, 255, 255, 0)
+            ShowUnit(donRogo, false)
+            PauseUnit(donRogo, true)
+            UnitAddAbility(donRogo, 'Aloc')
+            SetUnitTimeScale(donRogo, 0.)
         elseif timeElapsed > FINISHEDEXPLOSIONTIME and ready == false
             index = 0
             loop
@@ -90,23 +90,21 @@ package RogoDeath
                 if visible[index]
                     tempX = GetUnitX(lightParticles[index])
                     tempY = GetUnitY(lightParticles[index])
-                    direction = Atan2(terrain_STARTY-tempY, terrain_STARTX-tempX)
+                    direction = Atan2(STARTY-tempY, STARTX-tempX)
                     SetUnitX(lightParticles[index], tempX + RETURNSPEED*Cos(direction))
                     SetUnitY(lightParticles[index], tempY + RETURNSPEED*Sin(direction))
-                    dX = tempX-terrain_STARTX
-                    dY = tempY-terrain_STARTY
+                    dX = tempX-STARTX
+                    dY = tempY-STARTY
                     distance = SquareRoot(dX*dX + dY*dY)
                     if distance < REACHEDDIST
                         returnedCount++
                         if returnedCount == 1
-                            ShowUnit(units_donRogo, true)
+                            ShowUnit(donRogo, true)
                         end
                         ShowUnit(lightParticles[index], false)
                         visible[index] = false
-                        SetUnitVertexColor(units_donRogo, 255, 255, 255, R2I(returnedCount*255/(PARTICLESCOUNT + 1)))
-                        fx = AddSpecialEffect(helper_FLASHMODEL, terrain_STARTX, terrain_STARTY)
-                        DestroyEffect(fx)
-                        fx = null
+                        SetUnitVertexColor(donRogo, 255, 255, 255, R2I(returnedCount*255/(PARTICLESCOUNT + 1)))
+                        AddSpecialEffect(FLASHMODEL, STARTX, STARTY).destr()
                         if returnedCount > PARTICLESCOUNT
                             ready = true
                         end
@@ -116,13 +114,13 @@ package RogoDeath
             end
         else
             PauseTimer(time)
-            RemoveUnit(units_donRogo)
-            units_donRogo = CreateUnit(Player(0), units_HEROID, terrain_STARTX, terrain_STARTY, 270.)
+            RemoveUnit(donRogo)
+            donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
         end
     end
 
-    private function c takes nothing returns boolean
-        if GetTriggerUnit() == units_donRogo
+    function c takes nothing returns bool
+        if GetTriggerUnit() == donRogo
             timeElapsed = 0.
             ready = false
             TimerStart(time, FIDELITY, true, function p)
@@ -142,6 +140,4 @@ package RogoDeath
             UnitAddAbility(lightParticles[index], 'Aloc')
             index++
         end
-        t = null
     end
-end

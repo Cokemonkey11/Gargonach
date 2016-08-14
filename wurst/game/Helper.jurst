@@ -1,17 +1,16 @@
-
 package Helper
-	import Terrain
+    import TerrainMod
 
-    globals
-        private constant real TTVEL = 40.
-        private location loc = Location(0, 0)
-        private string array playerColors
-        public constant string BANISHSOUND = "Abilities\\Spells\\Human\\Banish\\BanishCaster.wav"
-        public constant string DUSTMODEL = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl"
-        public constant string SECRETFOUND = "Sound\\Interface\\SecretFound.wav"
-        public constant string FLASHMODEL = "Abilities\\Spells\\Human\\HolyBolt\\HolyBoltSpecialArt.mdl"
-        public string array ghoulSounds[2]
-    end
+    constant TTVEL = 40.
+    constant loc = Location(0, 0)
+    string array playerColors
+
+    public constant BANISHSOUND = "Abilities\\Spells\\Human\\Banish\\BanishCaster.wav"
+    public constant DUSTMODEL   = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl"
+    public constant SECRETFOUND = "Sound\\Interface\\SecretFound.wav"
+    public constant FLASHMODEL  = "Abilities\\Spells\\Human\\HolyBolt\\HolyBoltSpecialArt.mdl"
+
+    public string array ghoulSounds
 
     public function getZ takes real x, real y returns real
         MoveLocation(loc, x, y)
@@ -36,7 +35,6 @@ package Helper
         SetSoundVolume(snd, 127)
         StartSound(snd)
         KillSoundWhenDone(snd)
-        snd = null
     end
 
     public function globalSound takes string what, int volume returns nothing //note volume should be between 0 and 127
@@ -44,7 +42,6 @@ package Helper
         SetSoundVolume(snd, volume)
         StartSound(snd)
         KillSoundWhenDone(snd)
-        snd = null
     end
 
     public function quickTTAll takes string s, real x, real y, real rad returns nothing
@@ -64,58 +61,52 @@ package Helper
         SetSoundVolume(snd, 1)
         StartSound(snd)
         KillSoundWhenDone(snd)
-        snd = null
     end
 
-    public function isInMap takes real x, real y returns boolean
-        return (x < terrain_MAX_X and x > terrain_MIN_X and y > terrain_MIN_Y and y < terrain_MAX_Y)
+    public function isInMap takes real x, real y returns bool
+        return (x < MAX_X and x > MIN_X and y > MIN_Y and y < MAX_Y)
     end
 
-    scope light
-        public class lightDat
-            lightning light
-            real timeLeft
-            real startTime
-        end
+    public class LightDat
+        lightning light
+        real timeLeft
+        real startTime
+    end
 
-        globals
-            public constant real FIDELITY = 1./30.
-            public timer time = CreateTimer()
-            public int stackIndex = -1
-            public lightDat array lightDB
-        end
+    constant FIDELITY = 1./30.
+    constant time = CreateTimer()
+    var stackIndex = -1
+    LightDat array lightDB
 
-        public function p()
-            int index = 0
-            lightDat tempDat
-            loop
-                exitwhen index > stackIndex
-                tempDat = lightDB[index]
-                tempDat.timeLeft = tempDat.timeLeft-FIDELITY
-                SetLightningColor(tempDat.light, 1., 1., 1., tempDat.timeLeft/tempDat.startTime)
-                if tempDat.timeLeft < 0.
-                    DestroyLightning(tempDat.light)
-                    destroy tempDat
-                    lightDB[index] = lightDB[stackIndex]
-                    stackIndex--
-                    if stackIndex == -1
-                        PauseTimer(time)
-                    end
+    function p()
+        int index = 0
+        LightDat tempDat
+        loop
+            exitwhen index > stackIndex
+            tempDat = lightDB[index]
+            tempDat.timeLeft = tempDat.timeLeft-FIDELITY
+            SetLightningColor(tempDat.light, 1., 1., 1., tempDat.timeLeft/tempDat.startTime)
+            if tempDat.timeLeft < 0.
+                DestroyLightning(tempDat.light)
+                destroy tempDat
+                lightDB[index] = lightDB[stackIndex]
+                stackIndex--
+                if stackIndex == -1
+                    PauseTimer(time)
                 end
-                index++
             end
+            index++
         end
     end
 
     public function tempLightning takes string typ, real duration, real xS, real yS, real zS, real xF, real yF, real zF returns nothing
-        light_lightDat tempDat = new light_lightDat
+        let tempDat = new LightDat()
         tempDat.light = AddLightningEx(typ, false, xS, yS, getZ(xS, yS) + zS, xF, yF, getZ(xF, yF) + zF)
         tempDat.timeLeft = duration
         tempDat.startTime = duration
-        light_stackIndex = light_stackIndex + 1
-        light_lightDB[light_stackIndex] = tempDat
-        if light_stackIndex == 0
-            TimerStart(light_time, light_FIDELITY, true, function light_p)
+        stackIndex = stackIndex + 1
+        lightDB[stackIndex] = tempDat
+        if stackIndex == 0
+            TimerStart(time, FIDELITY, true, function p)
         end
     end
-end

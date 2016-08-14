@@ -1,35 +1,36 @@
-
-package Terrain
-    class mapCellData
+package TerrainMod
+    class MapCellData
         int previousType
         real timeLeft
         real x
         real y
     end
 
-    globals
-        public constant real MAX_X = 3300.
-        public constant real MAX_Y = 3070.
-        public constant real MIN_X = -3300.
-        public constant real MIN_Y = -3570.
-        public constant real STARTX = -2560.
-        public constant real STARTY = 2560.
-        private constant int TERRAIN_VARIATION_RANDOM = -1
-        private constant int TERRAIN_SHAPE_CIRCLE = 0
-        private constant real FIDELITY = 1./30. //Use 1/r where r is the effective frames per second cap of the temporary terrain modification
-        public int TYPE_COBBLESTONE
-        public int TYPE_WHITEMARBLE
-        public int TYPE_LAVA
-        public int TYPE_SAND
-        public int TYPE_GRASS
-        private timer time = CreateTimer()
-        private mapCellData array cellStack
-        private int cellStackI = -1
-    end
+    public constant MAX_X  = 3300.
+    public constant MAX_Y  = 3070.
+    public constant MIN_X  = -3300.
+    public constant MIN_Y  = -3570.
+    public constant STARTX = -2560.
+    public constant STARTY = 2560.
 
-    private function p()
+    constant TERRAIN_VARIATION_RANDOM = -1
+    constant TERRAIN_SHAPE_CIRCLE     =  0
+
+    constant FIDELITY = 1./30.
+
+    public int TYPE_COBBLESTONE
+    public int TYPE_WHITEMARBLE
+    public int TYPE_LAVA
+    public int TYPE_SAND
+    public int TYPE_GRASS
+
+    timer time = CreateTimer()
+    MapCellData array cellStack
+    int cellStackI = -1
+
+    function p()
         int index = 0
-        mapCellData tempDat
+        MapCellData tempDat
         loop
             exitwhen index > cellStackI
             tempDat = cellStack[index]
@@ -52,7 +53,7 @@ package Terrain
     end
 
     public function tempModify takes real x, real y, real duration, int terrainType returns nothing
-        mapCellData tempDat = new mapCellData
+        MapCellData tempDat = new MapCellData
         tempDat.previousType = GetTerrainType(x, y)
         tempDat.timeLeft = duration
         tempDat.x = x
@@ -72,4 +73,3 @@ package Terrain
         TYPE_SAND = GetTerrainType(-2820., -3970.)
         TYPE_GRASS = GetTerrainType(-3210., -3970.)
     end
-end

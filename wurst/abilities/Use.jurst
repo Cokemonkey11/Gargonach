@@ -1,28 +1,33 @@
-
 package Use
-    globals
-        private constant int USEID = 'A001'
-        private constant int LIGHTID = 'h003'
-        private constant int HEALTHYFOUNTAINID = 'h00E'
-        private constant int WISPSCOUNT = 4
-        private constant int WISPID = 'h00F'
-        private constant real ILLUMINATIONHEIGHT = 200.
-        private constant real LIGHTNINGBOLTDISTANCE = 1600.
-        private constant real LIGHTNINGRADIUS = 200.
-        private constant real OFFSET = 64.
-        private constant real FIDELITY = 1./30.
-        private constant real HEALVALUE = 10.
-        private constant real RADOFFS = bj_PI/64.
-        private constant string ILLUMINATION = "Abilities\\Spells\\Orc\\HealingWave\\HealingWave.wav"
-        private constant string LIGHTNINGSOUND = "Abilities\\Spells\\Items\\WandOfNeutralization\\WandOfNeutralization.wav"
-        private int obelisksIlluminated = 0
-        private group grp = CreateGroup()
-        private real offset = 0.
-        private unit array wisps[WISPSCOUNT]
-        private timer time = CreateTimer()
-    end
+    import Game
+    import Helper
+    import TerrainMod
+    import Units
 
-    private function p()
+    constant USEID             = 'A001'
+    constant LIGHTID           = 'h003'
+    constant HEALTHYFOUNTAINID = 'h00E'
+    constant WISPID            = 'h00F'
+    constant WISPSCOUNT        =     4
+
+    constant ILLUMINATIONHEIGHT    = 200.
+    constant LIGHTNINGBOLTDISTANCE = 1600.
+    constant LIGHTNINGRADIUS       = 200.
+    constant OFFSET                = 64.
+    constant FIDELITY              = 1./30.
+    constant HEALVALUE             = 10.
+    constant RADOFFS               = bj_PI/64.
+
+    constant ILLUMINATION   = "Abilities\\Spells\\Orc\\HealingWave\\HealingWave.wav"
+    constant LIGHTNINGSOUND = "Abilities\\Spells\\Items\\WandOfNeutralization\\WandOfNeutralization.wav"
+
+    int obelisksIlluminated = 0
+    group grp = CreateGroup()
+    real offset = 0.
+    unit array wisps
+    timer time = CreateTimer()
+
+    function p()
         int index = 0
         unit fst
         offset = offset + RADOFFS
@@ -31,14 +36,14 @@ package Use
         end
         loop
             exitwhen index > WISPSCOUNT
-            SetUnitX(wisps[index], GetUnitX(units_fountain) + OFFSET*(index + 1)*Cos(offset))
-            SetUnitY(wisps[index], GetUnitY(units_fountain) + OFFSET*(index + 1)*Sin(offset))
+            SetUnitX(wisps[index], GetUnitX(fountain) + OFFSET*(index + 1)*Cos(offset))
+            SetUnitY(wisps[index], GetUnitY(fountain) + OFFSET*(index + 1)*Sin(offset))
             GroupEnumUnitsInRange(grp, GetUnitX(wisps[index]), GetUnitY(wisps[index]), OFFSET, null)
             loop
                 fst = FirstOfGroup(grp)
                 exitwhen fst == null
-                if fst == units_donRogo
-                    SetUnitState(units_donRogo, UNIT_STATE_LIFE, GetUnitState(units_donRogo, UNIT_STATE_LIFE) + HEALVALUE)
+                if fst == donRogo
+                    SetUnitState(donRogo, UNIT_STATE_LIFE, GetUnitState(donRogo, UNIT_STATE_LIFE) + HEALVALUE)
                 end
                 GroupRemoveUnit(grp, fst)
             end
@@ -46,17 +51,17 @@ package Use
         end
     end
 
-    private function healingStart()
+    function healingStart()
         int index = 0
         loop
             exitwhen index > WISPSCOUNT
-            wisps[index] = CreateUnit(Player(0), WISPID, GetUnitX(units_fountain) + OFFSET*(index + 1), GetUnitY(units_fountain), 270.)
+            wisps[index] = CreateUnit(Player(0), WISPID, GetUnitX(fountain) + OFFSET*(index + 1), GetUnitY(fountain), 270.)
             index++
         end
         TimerStart(time, FIDELITY, true, function p)
     end
 
-    private function c takes nothing returns boolean
+    function c takes nothing returns bool
         unit targU
         real tUX
         real tUY
@@ -66,55 +71,54 @@ package Use
         unit fst
         if GetSpellAbilityId() == USEID
             targU = GetSpellTargetUnit()
-            if GetUnitTypeId(targU) == units_OBELISK
+            if GetUnitTypeId(targU) == OBELISK
                 obelisksIlluminated++
-                if obelisksIlluminated == game_OBELISK_COUNT
+                if obelisksIlluminated == OBELISK_COUNT
                     FogEnable(false)
-                    helper_globalSound(helper_SECRETFOUND, 127)
+                    globalSound(SECRETFOUND, 127)
                     DisplayTextToPlayer(Player(0), 0, 0, "|cff999999The |robelisks|cff999999 have enabled map vision...|r")
-                    QuestSetCompleted(game_enableLights, true)
+                    QuestSetCompleted(enableLights, true)
                 end
                 tUX = GetUnitX(targU)
                 tUY = GetUnitY(targU)
                 CreateUnit(Player(0), LIGHTID, tUX, tUY, 270.)
-                UnitAddAbility(targU, units_LOCUSTID)
-                helper_sound3d(ILLUMINATION, tUX, tUY, helper_getZ(tUX, tUY) + ILLUMINATIONHEIGHT)
-            elseif GetUnitTypeId(targU) == units_GENERATORID
+                UnitAddAbility(targU, LOCUSTID)
+                sound3d(ILLUMINATION, tUX, tUY, getZ(tUX, tUY) + ILLUMINATIONHEIGHT)
+            elseif GetUnitTypeId(targU) == GENERATORID
                 tUX = GetUnitX(targU)
                 tUY = GetUnitY(targU)
-                ang = Atan2(tUY-GetUnitY(units_donRogo), tUX-GetUnitX(units_donRogo))
+                ang = Atan2(tUY-GetUnitY(donRogo), tUX-GetUnitX(donRogo))
                 endX = tUX + LIGHTNINGBOLTDISTANCE*Cos(ang)
                 endY = tUY + LIGHTNINGBOLTDISTANCE*Sin(ang)
-                helper_tempLightning("CLPB", 1., tUX, tUY, 200., endX, endY, 50.)
-                helper_sound3d(LIGHTNINGSOUND, tUX, tUY, helper_getZ(tUX, tUY))
+                tempLightning("CLPB", 1., tUX, tUY, 200., endX, endY, 50.)
+                sound3d(LIGHTNINGSOUND, tUX, tUY, getZ(tUX, tUY))
                 GroupEnumUnitsInRange(grp, endX, endY, LIGHTNINGRADIUS, null)
                 loop
                     fst = FirstOfGroup(grp)
                     exitwhen fst == null
-                    if fst == units_fountain
-                        helper_globalSound(helper_SECRETFOUND, 127)
-                        tUX = GetUnitX(units_fountain)
-                        tUY = GetUnitY(units_fountain)
-                        RemoveUnit(units_fountain)
-                        QuestSetCompleted(game_enableFountain, true)
-                        units_fountain = CreateUnit(Player(0), HEALTHYFOUNTAINID, tUX, tUY, 270.)
+                    if fst == fountain
+                        globalSound(SECRETFOUND, 127)
+                        tUX = GetUnitX(fountain)
+                        tUY = GetUnitY(fountain)
+                        RemoveUnit(fountain)
+                        QuestSetCompleted(enableFountain, true)
+                        fountain = CreateUnit(Player(0), HEALTHYFOUNTAINID, tUX, tUY, 270.)
                         UnitAddAbility(targU, 'Aloc')
-                        terrain_permModify(tUX, tUY, terrain_TYPE_GRASS, 4)
+                        permModify(tUX, tUY, TYPE_GRASS, 4)
                         healingStart()
                     end
                     GroupRemoveUnit(grp, fst)
                 end
             else
-                helper_quickTTAll("I can't do that.", GetUnitX(units_donRogo), GetUnitY(units_donRogo), bj_PI/2)
+                quickTTAll("I can't do that.", GetUnitX(donRogo), GetUnitY(donRogo), bj_PI/2)
             end
-            targU = null
         end
         return false
     end
 
-    private function delayedC takes nothing returns boolean
-        helper_soundInitialize(ILLUMINATION)
-        helper_soundInitialize(LIGHTNINGSOUND)
+    function delayedC takes nothing returns bool
+        soundInitialize(ILLUMINATION)
+        soundInitialize(LIGHTNINGSOUND)
         return false
     end
 
@@ -125,7 +129,4 @@ package Use
         TriggerAddCondition(t, Condition(function c))
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
-        delayed = null
-        t = null
     end
-end

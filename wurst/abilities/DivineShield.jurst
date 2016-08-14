@@ -1,12 +1,12 @@
-
 package DivineShield
-    globals
-        private constant int DIVINESHIELDID = 'A005'
-        private constant real DISTANCE = 250.
-        private constant real ANGLEDIFF = bj_PI/16.
-    end
+    import Helper
+    import Units
 
-    private function c takes nothing returns boolean
+    constant DIVINESHIELDID = 'A005'
+    constant DISTANCE = 250.
+    constant ANGLEDIFF = bj_PI/16.
+
+    function c takes nothing returns bool
         int index = 0
         real direction
         real tempSize
@@ -23,24 +23,22 @@ package DivineShield
             cX = GetUnitX(tU)
             cY = GetUnitY(tU)
             direction = Atan2(tY-cY, tX-cX)
-            helper_sound3d(helper_BANISHSOUND, tX, tY, helper_getZ(tX, tY) + 50.)
+            sound3d(BANISHSOUND, tX, tY, getZ(tX, tY) + 50.)
             loop
                 exitwhen index > 4
-                shield = CreateUnit(Player(0), units_SHIELDID, cX + DISTANCE*Cos(direction-ANGLEDIFF*2 + ANGLEDIFF*index), cY + DISTANCE*Sin(direction-ANGLEDIFF*2 + ANGLEDIFF*index), 270.)
+                shield = CreateUnit(Player(0), SHIELDID, cX + DISTANCE*Cos(direction-ANGLEDIFF*2 + ANGLEDIFF*index), cY + DISTANCE*Sin(direction-ANGLEDIFF*2 + ANGLEDIFF*index), 270.)
                 tempSize = 1.-SquareRoot((2.-index)*(2.-index))/4.
                 SetUnitScale(shield, tempSize, tempSize, tempSize)
                 SetUnitMoveSpeed(shield, 0.)
                 UnitApplyTimedLife(shield, 'BTLF', 5.)
                 index++
             end
-            shield = null
-            tU = null
         end
         return false
     end
 
-    private function delayedC takes nothing returns boolean
-        helper_soundInitialize(helper_BANISHSOUND)
+    function delayedC takes nothing returns bool
+        soundInitialize(BANISHSOUND)
         return false
     end
 
@@ -49,9 +47,6 @@ package DivineShield
         trigger delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
-        delayed = null
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
         TriggerAddCondition(t, Condition(function c))
-        t = null
     end
-end

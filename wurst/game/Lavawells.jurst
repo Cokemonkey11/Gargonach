@@ -1,51 +1,50 @@
-
 package Lavawells
-	import Helper
-	import Knockback3
-	import Game
+    import Game
+    import Helper
+    import Knockback3
+    import Units
 
-    class lavae
+    class Lavae
         unit ball
         string state
         real xVel
         real yVel
     end
 
-    globals
-        private constant int MAXWELLS = 4
-        private constant int LAVATOHOLD = 5
-        private constant int LAVAID = 'h008'
-        private constant real COLLISIONRADIUS = 50.
-        private constant real FIDELITY = 2.
-        private constant real TIMERRATE = 1./30.
-        private constant real TOGARGONACHSPEED = 500.*TIMERRATE
-        private constant real INMOTIONSPEED = 700.*TIMERRATE
-        private constant real REACHED_GAR_DIST = 200.
-        private constant real ATRECTSIZE = 150.
-        private constant real LAVADAMAGE = 100.
-        private constant real TARGETOFFSETSIZE = 150.
-        private constant real HEALVALUE = 50.
-        private constant real MAXHEIGHTTOGETHIT = 100.
-        private lavae array lavaStack
-        private group grp = CreateGroup()
-        private int stackIndex = -1
-        private timer time = CreateTimer()
-    end
+    constant MAXWELLS   = 4
+    constant LAVATOHOLD = 5
+    constant LAVAID     = 'h008'
 
-    private function p()
-        lavae tempDat
-        boolean detonated = false
-        effect fx
+    constant COLLISIONRADIUS   = 50.
+    constant FIDELITY          = 2.
+    constant TIMERRATE         = 1./30.
+    constant TOGARGONACHSPEED  = 500.*TIMERRATE
+    constant INMOTIONSPEED     = 700.*TIMERRATE
+    constant REACHED_GAR_DIST  = 200.
+    constant ATRECTSIZE        = 150.
+    constant LAVADAMAGE        = 100.
+    constant TARGETOFFSETSIZE  = 150.
+    constant HEALVALUE         = 50.
+    constant MAXHEIGHTTOGETHIT = 100.
+
+    constant grp = CreateGroup()
+    constant time = CreateTimer()
+
+    Lavae array lavaStack
+    var stackIndex = -1
+
+    function p()
+        Lavae tempDat
+        bool detonated
         int index = 0
-        real garX = GetUnitX(units_gargonach)
-        real garY = GetUnitY(units_gargonach)
+        real garX = GetUnitX(gargonach)
+        real garY = GetUnitY(gargonach)
         real ballX
         real ballY
         real dir
         real dX
         real dY
         real dist
-        unit fst
         real newX
         real newY
         loop
@@ -53,13 +52,6 @@ package Lavawells
             tempDat = lavaStack[index]
             ballX = GetUnitX(tempDat.ball)
             ballY = GetUnitY(tempDat.ball)
-            newX = 0
-            newY = 0
-            fst = null
-            dist = 0
-            dY = 0
-            dX = 0
-            dir = 0
             if tempDat.state == "toGargonach"
                 dir = Atan2(garY-ballY, garX-ballX)
                 newX = ballX + TOGARGONACHSPEED*Cos(dir)
@@ -72,14 +64,14 @@ package Lavawells
                 detonated = false
                 GroupEnumUnitsInRange(grp, newX, newY, COLLISIONRADIUS, null)
                 loop
-                    fst = FirstOfGroup(grp)
+                    let fst = FirstOfGroup(grp)
                     exitwhen fst == null or detonated
-                    if fst == units_donRogo and GetUnitState(fst, UNIT_STATE_LIFE)>=1
+                    if fst == donRogo and GetUnitState(fst, UNIT_STATE_LIFE)>=1
                         detonated = true
-                        UnitDamageTarget(units_gargonach, units_donRogo, LAVADAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-                    elseif GetUnitTypeId(fst) == units_SHIELDID and GetUnitState(fst, UNIT_STATE_LIFE)>=1
+                        UnitDamageTarget(gargonach, donRogo, LAVADAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                    elseif GetUnitTypeId(fst) == SHIELDID and GetUnitState(fst, UNIT_STATE_LIFE)>=1
                         detonated = true
-                        helper_sound3d(helper_BANISHSOUND, ballX, ballY, helper_getZ(ballX, ballY) + 50.)
+                        sound3d(BANISHSOUND, ballX, ballY, getZ(ballX, ballY) + 50.)
                     end
                     GroupRemoveUnit(grp, fst)
                 end
@@ -96,10 +88,10 @@ package Lavawells
                     tempDat.state = "atGargonach"
                     tempDat.xVel = GetRandomReal(-1*ATRECTSIZE, ATRECTSIZE)
                     tempDat.yVel = GetRandomReal(-1*ATRECTSIZE, ATRECTSIZE)
-                    SetUnitState(units_gargonach, UNIT_STATE_LIFE, GetUnitState(units_gargonach, UNIT_STATE_LIFE) + HEALVALUE)
+                    SetUnitState(gargonach, UNIT_STATE_LIFE, GetUnitState(gargonach, UNIT_STATE_LIFE) + HEALVALUE)
                 end
             elseif tempDat.state == "atGargonach"
-                if GetUnitState(units_gargonach, UNIT_STATE_LIFE)>=1
+                if GetUnitState(gargonach, UNIT_STATE_LIFE)>=1
                     SetUnitX(tempDat.ball, garX + tempDat.xVel)
                     SetUnitY(tempDat.ball, garY + tempDat.yVel)
                 else
@@ -115,20 +107,20 @@ package Lavawells
                 newX = ballX + tempDat.xVel
                 newY = ballY + tempDat.yVel
                 detonated = false
-                if helper_isInMap(newX, newY)
+                if isInMap(newX, newY)
                     SetUnitX(tempDat.ball, newX)
                     SetUnitY(tempDat.ball, newY)
                     GroupEnumUnitsInRange(grp, newX, newY, COLLISIONRADIUS, null)
                     loop
-                        fst = FirstOfGroup(grp)
+                        let fst = FirstOfGroup(grp)
                         exitwhen fst == null or detonated
-                        if fst == units_donRogo and GetUnitState(fst, UNIT_STATE_LIFE)>=1 and GetUnitFlyHeight(units_donRogo) < MAXHEIGHTTOGETHIT
+                        if fst == donRogo and GetUnitState(fst, UNIT_STATE_LIFE)>=1 and GetUnitFlyHeight(donRogo) < MAXHEIGHTTOGETHIT
                             detonated = true
-                            UnitDamageTarget(units_gargonach, units_donRogo, LAVADAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-                            knockback_add(units_donRogo, LAVADAMAGE/3, Atan2(tempDat.yVel, tempDat.xVel), bj_PI/16)
-                        elseif GetUnitTypeId(fst) == units_SHIELDID and GetUnitState(fst, UNIT_STATE_LIFE)>=1
+                            UnitDamageTarget(gargonach, donRogo, LAVADAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                            Knockback3.add(donRogo, 700., angle(Atan2(tempDat.yVel, tempDat.xVel)), angle(bj_PI/16))
+                        elseif GetUnitTypeId(fst) == SHIELDID and GetUnitState(fst, UNIT_STATE_LIFE)>=1
                             detonated = true
-                            helper_sound3d(helper_BANISHSOUND, ballX, ballY, helper_getZ(ballX, ballY) + 50.)
+                            sound3d(BANISHSOUND, ballX, ballY, getZ(ballX, ballY) + 50.)
                         end
                         GroupRemoveUnit(grp, fst)
                     end
@@ -153,12 +145,12 @@ package Lavawells
 
     public function attack()
         int index = 0
-        real donX = GetUnitX(units_donRogo)
-        real donY = GetUnitY(units_donRogo)
+        real donX = GetUnitX(donRogo)
+        real donY = GetUnitY(donRogo)
         real ballX
         real ballY
         real dir
-        lavae tempDat
+        Lavae tempDat
         loop
             exitwhen index > stackIndex
             tempDat = lavaStack[index]
@@ -174,10 +166,10 @@ package Lavawells
         end
     end
 
-    public function countAtGarg takes boolean includeOnWay returns int
+    public function countAtGarg() returns int
         int returner = 0
         int index = 0
-        lavae tempDat
+        Lavae tempDat
         loop
             exitwhen index > stackIndex
             tempDat = lavaStack[index]
@@ -189,14 +181,13 @@ package Lavawells
         return returner
     end
 
-    private function countLiveWells takes nothing returns int
+    function countLiveWells takes nothing returns int
         int returner = 0
-        unit fst
         GroupEnumUnitsInRect(grp, bj_mapInitialPlayableArea, null)
         loop
-            fst = FirstOfGroup(grp)
+            let fst = FirstOfGroup(grp)
             exitwhen fst == null
-            if GetUnitTypeId(fst) == units_LAVAWELLID and GetUnitState(fst, UNIT_STATE_LIFE)>=1
+            if GetUnitTypeId(fst) == ID_LAVA_WELL and GetUnitState(fst, UNIT_STATE_LIFE)>=1
                 returner++
             end
             GroupRemoveUnit(grp, fst)
@@ -204,36 +195,35 @@ package Lavawells
         return returner
     end
 
-    private function c takes nothing returns boolean
+    function c takes nothing returns bool
         int index = 0
         int alive = 0
         int atGargCount
         int rand
         int liveCount = countLiveWells()
-        lavae tempDat
-        unit fst = null
+        Lavae tempDat
         loop
             exitwhen index>=liveCount
             GroupEnumUnitsInRect(grp, bj_mapInitialPlayableArea, null)
-            if liveCount == 0 or GetUnitState(units_gargonach, UNIT_STATE_LIFE) < 1.
+            if liveCount == 0 or GetUnitState(gargonach, UNIT_STATE_LIFE) < 1.
                 DisableTrigger(GetTriggeringTrigger())
             end
-            if GetUnitState(units_gargonach, UNIT_STATE_LIFE) < 1.
-                game_isOver = true
+            if GetUnitState(gargonach, UNIT_STATE_LIFE) < 1.
+                isOver = true
             end
             loop
-                fst = FirstOfGroup(grp)
+                let fst = FirstOfGroup(grp)
                 exitwhen fst == null
-                if GetUnitTypeId(fst) == units_LAVAWELLID and GetUnitState(fst, UNIT_STATE_LIFE)>=1 and game_isOver == false
+                if GetUnitTypeId(fst) == ID_LAVA_WELL and GetUnitState(fst, UNIT_STATE_LIFE)>=1 and isOver == false
                     alive++
-                    atGargCount = countAtGarg(true)
+                    atGargCount = countAtGarg()
                     if atGargCount < LAVATOHOLD
                         loop
                             rand = GetRandomInt(0, MAXWELLS)
-                            exitwhen GetUnitState(units_lavawells[rand], UNIT_STATE_LIFE)>=1
+                            exitwhen GetUnitState(lavawells[rand], UNIT_STATE_LIFE)>=1
                         end
-                        tempDat = new lavae
-                        tempDat.ball = CreateUnit(Player(1), LAVAID, GetUnitX(units_lavawells[rand]), GetUnitY(units_lavawells[rand]), 270.)
+                        tempDat = new Lavae
+                        tempDat.ball = CreateUnit(Player(1), LAVAID, GetUnitX(lavawells[rand]), GetUnitY(lavawells[rand]), 270.)
                         tempDat.state = "toGargonach"
                         tempDat.xVel = 1.
                         tempDat.yVel = 1.
@@ -259,4 +249,3 @@ package Lavawells
         TriggerRegisterTimerEvent(t, FIDELITY, true)
         TriggerAddCondition(t, Condition(function c))
     end
-end

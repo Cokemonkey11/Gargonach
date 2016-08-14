@@ -1,32 +1,28 @@
-
 package Lighthopping
-    globals
-        private constant int LIGHTHOPPINGID = 'A007'
-        private constant real FIRSTHOPPOWER = 25.
-        private constant real SECONDHOPPOWER = 23.
-        private constant real DELAY = .6
-        private real tX
-        private real tY
-        private timer time = CreateTimer()
+    import Helper
+    import Knockback3
+    import Units
+
+    constant LIGHTHOPPINGID = 'A007'
+
+    constant FIRSTHOPPOWER  = 1450.
+    constant SECONDHOPPOWER =  950.
+    constant DELAY          =     .6
+
+    vec2 target
+    timer time = CreateTimer()
+
+    function after()
+        AddSpecialEffectTarget(FLASHMODEL, donRogo, "origin").destr()
+        Knockback3.add(donRogo, SECONDHOPPOWER, donRogo.getPos().angleTo(target), angle(1.*bj_PI/8.))
     end
 
-    private function p()
-        effect fx = AddSpecialEffectTarget(helper_FLASHMODEL, units_donRogo, "origin")
-        DestroyEffect(fx)
-        fx = null
-        knockback_add(units_donRogo, SECONDHOPPOWER, Atan2(GetUnitY(units_donRogo)-tY, GetUnitX(units_donRogo)-tX), 7*bj_PI/8)
-    end
-
-    private function c takes nothing returns boolean
-        effect fx
+    function c() returns bool
         if GetSpellAbilityId() == LIGHTHOPPINGID
-            tX = GetSpellTargetX()
-            tY = GetSpellTargetY()
-            fx = AddSpecialEffect(helper_FLASHMODEL, GetUnitX(units_donRogo), GetUnitY(units_donRogo))
-            DestroyEffect(fx)
-            fx = null
-            knockback_add(units_donRogo, FIRSTHOPPOWER, 0., bj_PI/2)
-            TimerStart(time, DELAY, false, function p)
+            target = vec2(GetSpellTargetX(), GetSpellTargetY())
+            AddSpecialEffect(FLASHMODEL, GetUnitX(donRogo), GetUnitY(donRogo)).destr()
+            Knockback3.add(donRogo, FIRSTHOPPOWER, angle(0.), angle(bj_PI/2))
+            TimerStart(time, DELAY, false, function after)
         end
         return false
     end
@@ -35,6 +31,4 @@ package Lighthopping
         trigger t = CreateTrigger()
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
         TriggerAddCondition(t, Condition(function c))
-        t = null
     end
-end

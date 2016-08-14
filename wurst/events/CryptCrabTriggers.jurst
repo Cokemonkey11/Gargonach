@@ -1,15 +1,16 @@
-
 package CryptCrabTriggers
-    globals
-        private constant int SPAWNMIN = 1
-        private constant int SPAWNMAX = 3
-        private constant int CRABID = 'h00G'
-        private constant real MINSPAWNDIST = 200.
-        private constant real MAXSPAWNDIST = 400.
-        private constant string EFFECTSTRING = "Abilities\\Spells\\Items\\AIil\\AIilTarget.mdl"
-    end
+    import Units
 
-    private function c takes nothing returns boolean
+    constant SPAWNMIN = 1
+    constant SPAWNMAX = 3
+    constant CRABID = 'h00G'
+
+    constant MINSPAWNDIST = 200.
+    constant MAXSPAWNDIST = 400.
+
+    constant EFFECTSTRING = "Abilities\\Spells\\Items\\AIil\\AIilTarget.mdl"
+
+    function c takes nothing returns bool
         effect fx
         int index = 0
         int rand = GetRandomInt(SPAWNMIN, SPAWNMAX)
@@ -22,8 +23,8 @@ package CryptCrabTriggers
             exitwhen index > rand
             ang = GetRandomReal(0., 2*bj_PI)
             dist = GetRandomReal(MINSPAWNDIST, MAXSPAWNDIST)
-            randX = GetUnitX(units_donRogo) + dist*Cos(ang)
-            randY = GetUnitY(units_donRogo) + dist*Sin(ang)
+            randX = GetUnitX(donRogo) + dist*Cos(ang)
+            randY = GetUnitY(donRogo) + dist*Sin(ang)
             u = CreateUnit(Player(1), CRABID, randX, randY, 270.)
             SetUnitExploded(u, true)
             fx = AddSpecialEffect(EFFECTSTRING, randX, randY)
@@ -31,8 +32,6 @@ package CryptCrabTriggers
             index++
         end
         DisableTrigger(GetTriggeringTrigger())
-        fx = null
-        u = null
         return false
     end
 
@@ -56,11 +55,4 @@ package CryptCrabTriggers
         TriggerAddCondition(northEast, cond)
         TriggerRegisterEnterRectSimple(southEast, Rect(2310., -2270., 3000., -1870.))
         TriggerAddCondition(southEast, Condition(function c))
-        northWest = null
-        west = null
-        southWest = null
-        north = null
-        northEast = null
-        southEast = null
     end
-end

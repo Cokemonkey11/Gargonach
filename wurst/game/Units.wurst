@@ -1,0 +1,92 @@
+package Units
+    public constant HEROID            = 'h001'
+    public constant OBELISK           = 'h002'
+    public constant ID_GARGONACH      = 'h000'
+    public constant LOCUSTID          = 'Aloc'
+    public constant SHIELDID          = 'h00B'
+    public constant ID_LAVA_WELL      = 'h007'
+    public constant GENERATORID       = 'h00C'
+    public constant DEFILEDFOUNTAINID = 'h00D'
+
+    public constant STANDARDSTUN = "Abilities\\Spells\\Human\\Thunderclap\\ThunderclapTarget.mdl"
+
+    public unit gargonach
+    public unit donRogo
+    public unit sandMill
+    public unit hammer
+    public unit fountain
+    public unit array sandKegs
+    public unit array lavawells
+
+    constant PAUSEFIDELITY = 1./30.
+
+    PauseDat array pauseDB
+    int pauseDBIndex = -1
+    timer pauseTime = CreateTimer()
+
+
+    class PauseDat
+        unit u
+        real timeLeft
+        string overheadEffect
+
+
+    function timedPauseGetIndex(unit u) returns int
+        int returner = -1
+        int index = 0
+        PauseDat tempDat
+        while index <= pauseDBIndex and returner == -1
+            tempDat = pauseDB[index]
+
+            if tempDat.u == u
+                returner = index
+
+            index++
+
+        return returner
+
+
+    function timedPauseP()
+        PauseDat tempDat
+        int index = 0
+        while index <= pauseDBIndex
+            tempDat = pauseDB[index]
+            tempDat.timeLeft = tempDat.timeLeft-PAUSEFIDELITY
+            AddSpecialEffectTarget(tempDat.overheadEffect, tempDat.u, "overhead").destr()
+
+            if tempDat.timeLeft<=0. or GetUnitState(tempDat.u, UNIT_STATE_LIFE) < 1
+                PauseUnit(tempDat.u, false)
+                destroy tempDat
+                pauseDB[index] = pauseDB[pauseDBIndex]
+                pauseDBIndex--
+
+                if pauseDBIndex == -1
+                    PauseTimer(pauseTime)
+
+            index++
+
+
+    public function isUnitPaused(unit u) returns bool
+        return timedPauseGetIndex(u) != -1
+
+
+    public function timedPause(unit u, real s, string way, string overheadEffect)
+        int indexFromUnit = timedPauseGetIndex(u)
+        PauseDat tempDat
+
+        if way == "set"
+            if indexFromUnit != -1
+                tempDat = pauseDB[indexFromUnit]
+                tempDat.timeLeft = s
+                tempDat.overheadEffect = overheadEffect
+            else
+                tempDat = new PauseDat
+                tempDat.u = u
+                tempDat.timeLeft = s
+                tempDat.overheadEffect = overheadEffect
+                pauseDBIndex++
+                pauseDB[pauseDBIndex] = tempDat
+                if pauseDBIndex == 0
+                    TimerStart(pauseTime, PAUSEFIDELITY, true, function timedPauseP)
+
+                PauseUnit(u, true)

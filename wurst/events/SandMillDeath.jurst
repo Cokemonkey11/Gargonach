@@ -1,66 +1,63 @@
-
 package SandMillDeath
-    globals
-        private constant int DUSTCOUNT = 10
-        private constant string DUSTMODEL = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl"
-    end
+    import Game
+    import Helper
+    import TerrainMod
+    import Units
 
-    private function c takes nothing returns boolean
+    constant DUSTCOUNT = 10
+    constant DUSTMODEL = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl"
+
+    function c takes nothing returns bool
         int index = 0
-        effect fx
-        real tempX
-        real tempY
         real dir
         real dist
         real uX
         real uY
-        if GetTriggerUnit() == units_sandMill
-            helper_globalSound(helper_SECRETFOUND, 127)
-            QuestSetCompleted(game_safePassage, true)
+        if GetTriggerUnit() == sandMill
+            globalSound(SECRETFOUND, 127)
+            QuestSetCompleted(safePassage, true)
             loop
                 exitwhen index > 4
-                SetUnitExploded(units_sandKegs[index], true)
-                fx = AddSpecialEffect(DUSTMODEL, GetUnitX(units_sandKegs[index]), GetUnitY(units_sandKegs[index]))
-                DestroyEffect(fx)
-                KillUnit(units_sandKegs[index])
+                SetUnitExploded(sandKegs[index], true)
+                AddSpecialEffect(DUSTMODEL, GetUnitX(sandKegs[index]), GetUnitY(sandKegs[index])).destr()
+                KillUnit(sandKegs[index])
                 index++
             end
-            uX = GetUnitX(units_sandMill)
-            uY = GetUnitY(units_sandMill)
-            terrain_permModify(uX, uY, terrain_TYPE_SAND, 5)
+            uX = GetUnitX(sandMill)
+            uY = GetUnitY(sandMill)
+            permModify(uX, uY, TYPE_SAND, 5)
             index = 0
             loop
                 exitwhen index > DUSTCOUNT
                 dir = GetRandomReal(0., 2.*bj_PI)
                 dist = GetRandomReal(0., 300.)
-                fx = AddSpecialEffect(helper_DUSTMODEL, uX + dist*Cos(dir), uY + dist*Sin(dir))
+                AddSpecialEffect(DUSTMODEL, uX + dist*Cos(dir), uY + dist*Sin(dir)).destr()
                 index++
             end
-            terrain_permModify(uX-256., uY + 256., terrain_TYPE_SAND, 5)
+            permModify(uX-256., uY + 256., TYPE_SAND, 5)
             index = 0
             loop
                 exitwhen index > DUSTCOUNT
                 dir = GetRandomReal(0., 2.*bj_PI)
                 dist = GetRandomReal(0., 300.)
-                fx = AddSpecialEffect(helper_DUSTMODEL, uX-256. + dist*Cos(dir), uY + 256. + dist*Sin(dir))
+                AddSpecialEffect(DUSTMODEL, uX-256. + dist*Cos(dir), uY + 256. + dist*Sin(dir)).destr()
                 index++
             end
-            terrain_permModify(uX-512., uY + 512., terrain_TYPE_SAND, 5)
+            permModify(uX-512., uY + 512., TYPE_SAND, 5)
             index = 0
             loop
                 exitwhen index > DUSTCOUNT
                 dir = GetRandomReal(0., 2.*bj_PI)
                 dist = GetRandomReal(0., 300.)
-                fx = AddSpecialEffect(helper_DUSTMODEL, uX-512. + dist*Cos(dir), uY + 512. + dist*Sin(dir))
+                AddSpecialEffect(DUSTMODEL, uX-512. + dist*Cos(dir), uY + 512. + dist*Sin(dir)).destr()
                 index++
             end
-            fx = null
         end
         return false
     end
 
-    private function delayedC takes nothing returns boolean
-        helper_soundInitialize(helper_SECRETFOUND)
+    function delayedC takes nothing returns bool
+        soundInitialize(SECRETFOUND)
         return false
     end
 
@@ -71,6 +68,4 @@ package SandMillDeath
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH)
         TriggerAddCondition(t, Condition(function c))
-        t = null
     end
-end

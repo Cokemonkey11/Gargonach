@@ -1,31 +1,33 @@
-
 package GargonachDeath
-    globals
-        private constant string GOODJOB = "Sound\\Interface\\GoodJob.wav"
-    end
+    import Fade
+    import Game
+    import Helper
+    import Units
 
-    private function after()
+    constant GOODJOB = "Sound\\Interface\\GoodJob.wav"
+
+    function after()
         EndGame(false)
     end
 
-    private function c takes nothing returns boolean
+    function c takes nothing returns bool
         timer time
-        if GetTriggerUnit() == units_gargonach
-            QuestSetCompleted(game_killGargonach, true)
-            helper_globalSound(GOODJOB, 127)
-            fade_out(10.)
+        if GetTriggerUnit() == gargonach
+            QuestSetCompleted(killGargonach, true)
+            globalSound(GOODJOB, 127)
+            fadeOut(10.)
             time = CreateTimer()
             EnableUserControl(false)
             TimerStart(time, 10., false, function after)
-            SetUnitTimeScale(units_gargonach, .25)
+            SetUnitTimeScale(gargonach, .25)
             DisplayTimedTextToPlayer(GetLocalPlayer(), 1.05, .5, 15., "|cff999999Victory|r")
-            TerrainDeformRipple(GetUnitX(units_gargonach), GetUnitY(units_gargonach), 1024., 32., 20000, 1, 4., 40., 1., false)
+            TerrainDeformRipple(GetUnitX(gargonach), GetUnitY(gargonach), 1024., 32., 20000, 1, 4., 40., 1., false)
         end
         return false
     end
 
-    private function delayedC takes nothing returns boolean
-        helper_soundInitialize(GOODJOB)
+    function delayedC takes nothing returns bool
+        soundInitialize(GOODJOB)
         return false
     end
 
@@ -34,9 +36,6 @@ package GargonachDeath
         trigger delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
-        delayed = null
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH)
         TriggerAddCondition(t, Condition(function c))
-        t = null
     end
-end
