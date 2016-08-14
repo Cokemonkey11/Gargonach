@@ -20,7 +20,7 @@ package RogoDeath
     bool array visible
     constant time = CreateTimer()
     var timeElapsed = 0.
-    var steps = 0
+    var steps   = 0
     var opacity = 0
     unit array lightParticles
     real array particleVx
@@ -78,11 +78,10 @@ package RogoDeath
                 index++
             end
             donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
-            SetUnitVertexColor(donRogo, 255, 255, 255, 0)
-            ShowUnit(donRogo, false)
-            PauseUnit(donRogo, true)
-            UnitAddAbility(donRogo, 'Aloc')
-            SetUnitTimeScale(donRogo, 0.)
+            donRogo..setVertexColor(255, 255, 255, 0)
+                   ..hide()
+                   ..pause()
+                   ..setTimeScale(0.)
         elseif timeElapsed > FINISHEDEXPLOSIONTIME and ready == false
             index = 0
             loop
@@ -99,7 +98,7 @@ package RogoDeath
                     if distance < REACHEDDIST
                         returnedCount++
                         if returnedCount == 1
-                            ShowUnit(donRogo, true)
+                            donRogo..show()..addAbility('Aloc')
                         end
                         ShowUnit(lightParticles[index], false)
                         visible[index] = false
@@ -116,6 +115,7 @@ package RogoDeath
             PauseTimer(time)
             RemoveUnit(donRogo)
             donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
+            Player(0).select(donRogo)
         end
     end
 

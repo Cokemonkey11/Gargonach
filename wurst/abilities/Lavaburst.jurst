@@ -6,7 +6,6 @@ package Lavaburst
     constant LAVABURSTID = 'A003'
 
     function c takes nothing returns bool
-        int index = 0
         real uX
         real uY
         if GetSpellAbilityId() == LAVABURSTID
