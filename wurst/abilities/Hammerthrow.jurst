@@ -1,20 +1,25 @@
 package Hammerthrow
+    import AbilityObjEditing
+    import ClosureTimers
     import Fx
     import Units
 
-    constant HAMMERTHROW = 'A000'
-    constant ATTACKID    = 'A002'
+    constant HAMMERTHROW              = 'A000'
+    constant ATTACKID                 = 'A002'
+    constant ID_HAMMER_THROW_COOLDOWN = 'A$00'
 
-    constant SPEED        = 1400.*ANIMATION_PERIOD
-    constant STARTHEIGHT  =  150.
-    constant ENUMRAD      =  150.
-    constant DAMAGE       =  150.
-    constant MINFLYHEIGHT =    5.
-    constant TIMEOUT      =   10.
+    constant SPEED                 = 1400.*ANIMATION_PERIOD
+    constant STARTHEIGHT           =  150.
+    constant ENUMRAD               =  150.
+    constant DAMAGE                =  150.
+    constant MINFLYHEIGHT          =    5.
+    constant TIMEOUT               =   10.
+    constant COOLDOWN_AFTER_PICKUP =    2.
 
     constant GRAVITY      = vec3(0., 0., -1.)
 
-    constant PATH_STORM_BOLT = "Abilities\\Spells\\Human\\StormBolt\\StormBoltMissile.mdl"
+    constant PATH_STORM_BOLT           = "Abilities\\Spells\\Human\\StormBolt\\StormBoltMissile.mdl"
+    constant PATH_ICON_HAMMER_DISABLED = "ReusableTextures\\CommandButtons\\PASHammer.blp"
 
     constant time = CreateTimer()
     constant grp = CreateGroup()
@@ -26,8 +31,14 @@ package Hammerthrow
         let tU = GetTriggerUnit()
         if tU == donRogo or tU == null
             destroy hammer
-            UnitAddAbility(donRogo, HAMMERTHROW)
+            UnitAddAbility(donRogo, ID_HAMMER_THROW_COOLDOWN)
             UnitAddAbility(donRogo, ATTACKID)
+            
+            doAfter(COOLDOWN_AFTER_PICKUP, () -> begin
+                donRogo..removeAbility(ID_HAMMER_THROW_COOLDOWN)
+                       ..addAbility(HAMMERTHROW)
+            end)
+
             DestroyTrigger(GetTriggeringTrigger())
         end
 
@@ -85,4 +96,22 @@ package Hammerthrow
         trigger t = CreateTrigger()
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
         TriggerAddCondition(t, Condition(function c))
+    end
+
+
+    class HammerthrowCooldownAbilityDefinition extends AbilityDefinition
+        construct(int id)
+            super(id, 'Amgl')
+            setName("Hammerthrow")
+            setEditorSuffix("Disabled Dummy Icon")
+            setButtonPositionNormalX(0)
+            setIconNormal(PATH_ICON_HAMMER_DISABLED)
+            setRequirements("")
+            setTooltipNormal(1, "Hammerthrow (On Cooldown)")
+            setTooltipNormalExtended(1, "Don Rogo throws his hammer dealing heavy damage. After throwing, This ability and Rogo's attack can not be used again until the projectile is retrived or until a short timeout passes.|n |n|cff999999Type:|r Instant Target Direction|n|cff999999Damage:|r 150.|n|cff999999Projectile Speed:|r 1400. game units/s|n|cff999999Timeout:|r 10. seconds")
+        end
+    end
+
+    @compiletime function createHammerthrowCooldown()
+        new HammerthrowCooldownAbilityDefinition(ID_HAMMER_THROW_COOLDOWN)
     end
