@@ -7,9 +7,9 @@ package Smokestack
     constant LAUNCHSMOKECOUNT = 15
 
     constant FIDELITY    =   1./30.
-    constant CHANNELTIME =    .75
+    constant CHANNELTIME =    .9
     constant RADIUS      = 180.
-    constant DAMAGE      = 100.
+    constant DAMAGE      = 200.
 
     constant LAUNCHSOUND  = "Abilities\\Spells\\Human\\Defend\\DefendCaster.wav"
     constant IMPALESTRING = "Abilities\\Spells\\Undead\\Impale\\ImpaleMissTarget.mdl"
@@ -43,7 +43,7 @@ package Smokestack
         else
             loop
                 exitwhen index > LAUNCHSMOKECOUNT
-                AddSpecialEffect(DUSTMODEL, tX + RADIUS*3/4*Cos(index*2*bj_PI/(LAUNCHSMOKECOUNT + 1)), tY + RADIUS*3/4*Sin(index*2*bj_PI/(LAUNCHSMOKECOUNT + 1))).destr()
+                AddSpecialEffect(DUSTMODEL, tX + RADIUS*2/3*Cos(index*2*bj_PI/(LAUNCHSMOKECOUNT + 1)), tY + RADIUS*2/3*Sin(index*2*bj_PI/(LAUNCHSMOKECOUNT + 1))).destr()
                 index++
             end
             sound3d(LAUNCHSOUND, tX, tY, getZ(tX, tY))

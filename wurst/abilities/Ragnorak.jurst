@@ -5,16 +5,17 @@ package Ragnorak
     constant RAGNORAKID = 'A004'
     constant HAMMERID   = 'h00A'
 
-    constant FIDELITY      = 1./30.
-    constant CHANNELTIME   =  .75
-    constant FALLTIME      = CHANNELTIME + .5
-    constant FADETIME      = FALLTIME + 3.
-    constant FALLANGLE     = -75.*bj_DEGTORAD
-    constant INITIALHEIGHT = 1200.
-    constant TARGETHEIGHT  =  600.
-    constant INITIALOFFS   =  250.
-    constant RADIUS        =  300.
-    constant DAMAGE        =  300.
+    constant FIDELITY         = 1./30.
+    constant CHANNELTIME      =  .8
+    constant FALLTIME         = CHANNELTIME + .5
+    constant FADETIME         = FALLTIME + 3.
+    constant FALLANGLE        = -75.*bj_DEGTORAD
+    constant INITIALHEIGHT    = 1200.
+    constant TARGETHEIGHT     =  600.
+    constant INITIALOFFS      =  250.
+    constant RADIUS           =  300.
+    constant DAMAGE           =  320.
+    constant MASSIVEPAUSETIME =     .9
     constant CHANNELEFFECTOFFSET = 150.
 
     constant CHANNELINGMODEL  = "Abilities\\Spells\\Human\\Invisibility\\InvisibilityTarget.mdl"
@@ -73,8 +74,12 @@ package Ragnorak
                 loop
                     fst = FirstOfGroup(grp)
                     exitwhen fst == null
-                    if IsUnitEnemy(fst, Player(0))
+                    if IsUnitEnemy(fst, Player(0)) and fst.isAlive()
                         UnitDamageTarget(donRogo, fst, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+
+                        if fst == gargonach and gargonach.isAlive()
+                            timedPause(gargonach, MASSIVEPAUSETIME, "set", STANDARDSTUN)
+                        end
                     end
                     GroupRemoveUnit(grp, fst)
                 end

@@ -17,7 +17,6 @@ package AttackDonRogo
     constant BOSSRANGE        = 350.
     constant FIDELITY         =    .05
     constant PAUSETIME        =    .5
-    constant MASSIVEPAUSETIME =    .4
 
     constant string DAMAGESOUND = "Sound\\Units\\Combat\\MetalHeavyBashFlesh2.wav"
 
@@ -89,7 +88,6 @@ package AttackDonRogo
                         difference = facing-angBetween
                         if difference < ATTACKANGLE and difference > -1*ATTACKANGLE
                             UnitDamageTarget(donRogo, gargonach, DAMAGE, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-                            timedPause(gargonach, MASSIVEPAUSETIME, "set", STANDARDSTUN)
                             sound3d(DAMAGESOUND, fX, fY, GetUnitFlyHeight(gargonach))
                         end
                     end
