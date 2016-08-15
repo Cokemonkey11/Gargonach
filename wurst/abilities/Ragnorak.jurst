@@ -67,8 +67,8 @@ package Ragnorak
             if damaged == false
                 uX = GetUnitX(ragHammer)
                 uY = GetUnitY(ragHammer)
-                sound3d(SMASHSOUND, uX, uY, GetUnitFlyHeight(hammer))
-                sound3d(THUNDERCLAPSOUND, uX, uY, GetUnitFlyHeight(hammer))
+                sound3d(SMASHSOUND, uX, uY, GetUnitFlyHeight(ragHammer))
+                sound3d(THUNDERCLAPSOUND, uX, uY, GetUnitFlyHeight(ragHammer))
                 GroupEnumUnitsInRange(grp, uX, uY, RADIUS, null)
                 loop
                     fst = FirstOfGroup(grp)

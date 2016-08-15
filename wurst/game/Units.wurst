@@ -13,7 +13,6 @@ package Units
     public unit gargonach
     public unit donRogo
     public unit sandMill
-    public unit hammer
     public unit fountain
     public unit array sandKegs
     public unit array lavawells

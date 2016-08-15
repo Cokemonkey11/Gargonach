@@ -1,35 +1,31 @@
 package Hammerthrow
-    import Helper
+    import Fx
     import Units
 
     constant HAMMERTHROW = 'A000'
     constant ATTACKID    = 'A002'
-    constant HAMMERID    = 'h006'
 
-    constant FIDELITY     = 1./30.
-    constant SPEED        = 1400.*FIDELITY
-    constant STARTHEIGHT  = 150.
-    constant GRAVITY      = 1.
-    constant ENUMRAD      = 150.
-    constant DAMAGE       = 150.
-    constant MINFLYHEIGHT = 5.
-    constant TIMEOUT      = 10.
+    constant SPEED        = 1400.*ANIMATION_PERIOD
+    constant STARTHEIGHT  =  150.
+    constant ENUMRAD      =  150.
+    constant DAMAGE       =  150.
+    constant MINFLYHEIGHT =    5.
+    constant TIMEOUT      =   10.
 
-    constant STORMBOLTMODEL = "Abilities\\Spells\\Human\\StormBolt\\StormBoltMissile.mdl"
+    constant GRAVITY      = vec3(0., 0., -1.)
+
+    constant PATH_STORM_BOLT = "Abilities\\Spells\\Human\\StormBolt\\StormBoltMissile.mdl"
 
     constant time = CreateTimer()
     constant grp = CreateGroup()
 
-    boolexpr cond
-    real vX
-    real vY
-    real vZ
+    vec3 vel
+    Fx   hammer
 
     function tempC takes nothing returns bool
         let tU = GetTriggerUnit()
         if tU == donRogo or tU == null
-            PauseUnit(hammer, false)
-            ShowUnit(hammer, false)
+            destroy hammer
             UnitAddAbility(donRogo, HAMMERTHROW)
             UnitAddAbility(donRogo, ATTACKID)
             DestroyTrigger(GetTriggeringTrigger())
@@ -40,80 +36,53 @@ package Hammerthrow
 
     function p()
         bool damaged = false
-        real currX = GetUnitX(hammer)
-        real currY = GetUnitY(hammer)
-        real currZ = getZ(currX, currY)
-        real targX = currX + vX
-        real targY = currY + vY
-        real targZ = getZ(targX, targY)
-        real diffZ = targZ-currZ
-        unit fst
-        trigger tTemp
-        SetUnitFlyHeight(hammer, GetUnitFlyHeight(hammer)-diffZ + vZ, 0.)
-        vZ = vZ-GRAVITY
-        SetUnitX(hammer, targX)
-        SetUnitY(hammer, targY)
+        let curr = hammer.getPos3d()
+        let targ = curr + vel
+        vel += GRAVITY
+        hammer.setXYheight(targ)
 
-        GroupEnumUnitsInRange(grp, targX, targY, ENUMRAD, null)
+        grp.enumUnitsInRange(targ.toVec2(), ENUMRAD)
         loop
-            fst = FirstOfGroup(grp)
+            let fst = FirstOfGroup(grp)
             exitwhen fst == null or damaged
             if IsUnitEnemy(fst, Player(0)) and GetUnitState(fst, UNIT_STATE_LIFE)>=1
                 damaged = true
                 if GetUnitTypeId(fst) != ID_LAVA_WELL and fst != sandMill
-                    UnitDamageTarget(hammer, fst, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                    UnitDamageTarget(donRogo, fst, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
                 end
             end
             GroupRemoveUnit(grp, fst)
         end
 
-        if damaged or GetUnitFlyHeight(hammer) < MINFLYHEIGHT
-            AddSpecialEffect(STORMBOLTMODEL, GetUnitX(hammer), GetUnitY(hammer)).destr()
+        if damaged or hammer.getZ() < MINFLYHEIGHT
+            addEffect(PATH_STORM_BOLT, hammer.getPos2()).destr()
             PauseTimer(time)
-            UnitRemoveAbility(hammer, 'Aloc')
-            tTemp = CreateTrigger()
-            TriggerRegisterUnitInRange(tTemp, hammer, 150., null)
+            let tTemp = CreateTrigger()
+            TriggerRegisterUnitInRange(tTemp, hammer.getDummy(), 150., null)
             TriggerRegisterTimerEvent(tTemp, TIMEOUT, false)
-            TriggerAddCondition(tTemp, cond)
-            PauseUnit(hammer, true)
+            TriggerAddCondition(tTemp, Condition(function tempC))
         end
     end
 
     function c takes nothing returns bool
-        unit tU
-        real ang
-        real uX
-        real uY
         if GetSpellAbilityId() == HAMMERTHROW
-            tU = GetTriggerUnit()
-            uX = GetUnitX(tU)
-            uY = GetUnitY(tU)
-            SetUnitX(hammer, uX)
-            SetUnitY(hammer, uY)
-            ang = Atan2(GetSpellTargetY()-uY, GetSpellTargetX()-uX)
-            vX = SPEED*Cos(ang)
-            vY = SPEED*Sin(ang)
-            vZ = 0.
+            let tU = GetTriggerUnit()
+            let uPos = tU.getPos()
+            let ang = tU.getPos().angleTo(vec2(GetSpellTargetX(), GetSpellTargetY()))
+            vel = vec3(0., 0., 0.).polarProject(SPEED, ang, angle(0.))
             UnitRemoveAbility(donRogo, ATTACKID)
             UnitRemoveAbility(donRogo, HAMMERTHROW)
-            ShowUnit(hammer, true)
-            PauseUnit(hammer, false)
-            SetUnitFacing(hammer, ang*bj_RADTODEG)
-            SetUnitFlyHeight(hammer, STARTHEIGHT, 0.)
-            TimerStart(time, FIDELITY, true, function p)
+            hammer = new Fx(uPos.x, uPos.y, ang, PATH_STORM_BOLT)
+            hammer.setFx(PATH_STORM_BOLT)
+            hammer.setZ(STARTHEIGHT)
+
+            TimerStart(time, ANIMATION_PERIOD, true, function p)
         end
         return false
     end
 
     init
         trigger t = CreateTrigger()
-        cond = Condition(function tempC)
-        hammer = CreateUnit(Player(0), HAMMERID, 0., 0., 270.)
-        UnitAddAbility(hammer, LOCUSTID)
-        UnitAddAbility(hammer, 'Arav')
-        UnitRemoveAbility(hammer, 'Arav')
-        SetUnitInvulnerable(hammer, true)
-        ShowUnit(hammer, false)
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
         TriggerAddCondition(t, Condition(function c))
     end

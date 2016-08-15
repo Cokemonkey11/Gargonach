@@ -123,10 +123,12 @@ package RogoDeath
             super(id, 'ushd')
             setModelFile("dummy.mdl")
             setFoodCost(0)
-            setName("Vision Dumm")
+            setName(" ")
+            setNameEditorSuffix("Vision Dumm")
             setMovementHeight(1000.)
             setMovementHeightMinimum(1000.)
             setShadowImageUnit("")
+            setSelectionScale(-1.)
 
 
     @compiletime function createVisionDummy()
