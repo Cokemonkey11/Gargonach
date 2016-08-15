@@ -104,29 +104,29 @@ package Lavawells
                     end
                 end
             elseif tempDat.state == "inMotion"
-                newX = ballX + tempDat.xVel
-                newY = ballY + tempDat.yVel
+                let newPos = vec2(ballX, ballY) + vec2(tempDat.xVel, tempDat.yVel)
                 detonated = false
-                if isInMap(newX, newY)
-                    SetUnitX(tempDat.ball, newX)
-                    SetUnitY(tempDat.ball, newY)
-                    GroupEnumUnitsInRange(grp, newX, newY, COLLISIONRADIUS, null)
+                if isInMap(newPos.x, newPos.y)
+                    tempDat.ball.setPos(newPos)
+                    GroupEnumUnitsOfPlayer(grp, Player(0), null)
                     loop
-                        let fst = FirstOfGroup(grp)
-                        exitwhen fst == null or detonated
-                        if fst == donRogo and GetUnitState(fst, UNIT_STATE_LIFE)>=1 and GetUnitFlyHeight(donRogo) < MAXHEIGHTTOGETHIT
-                            detonated = true
-                            UnitDamageTarget(gargonach, donRogo, LAVADAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-                            Knockback3.add(donRogo, 700., angle(Atan2(tempDat.yVel, tempDat.xVel)), angle(bj_PI/16))
-                        elseif GetUnitTypeId(fst) == SHIELDID and GetUnitState(fst, UNIT_STATE_LIFE)>=1
-                            detonated = true
-                            sound3d(BANISHSOUND, ballX, ballY, getZ(ballX, ballY) + 50.)
+                        exitwhen not grp.hasNext()
+                        let fst = grp.next()
+                        if fst.isAlive() and (newPos - fst.getPos()).lengthSquared() < COLLISIONRADIUS*COLLISIONRADIUS
+                            if fst == donRogo
+                                detonated = true
+                                UnitDamageTarget(gargonach, donRogo, LAVADAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
+                                Knockback3.add(donRogo, 700., angle(Atan2(tempDat.yVel, tempDat.xVel)), angle(bj_PI/16))
+                            elseif fst.getTypeId() == SHIELDID
+                                detonated = true
+                                sound3d(BANISHSOUND, ballX, ballY, getZ(ballX, ballY) + 50.)
+                            end
                         end
-                        GroupRemoveUnit(grp, fst)
                     end
                 else
                     detonated = true
                 end
+
                 if detonated
                     KillUnit(tempDat.ball)
                     lavaStack[index] = lavaStack[stackIndex]

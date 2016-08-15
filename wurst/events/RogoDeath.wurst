@@ -124,7 +124,7 @@ package RogoDeath
             setModelFile("dummy.mdl")
             setFoodCost(0)
             setName(" ")
-            setNameEditorSuffix("Vision Dumm")
+            setNameEditorSuffix("Vision Dummy")
             setMovementHeight(1000.)
             setMovementHeightMinimum(1000.)
             setShadowImageUnit("")
