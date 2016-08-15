@@ -1,64 +1,89 @@
 package Use
+    import Fx
     import Game
+    import GameTimer
     import Helper
+    import LinkedListModule
     import TerrainMod
     import Units
 
     constant USEID             = 'A001'
     constant LIGHTID           = 'h003'
     constant HEALTHYFOUNTAINID = 'h00E'
-    constant WISPID            = 'h00F'
-    constant WISPSCOUNT        =     4
+    constant NUM_WISPS         =     8
 
-    constant ILLUMINATIONHEIGHT    = 200.
+    constant ILLUMINATIONHEIGHT    =  200.
     constant LIGHTNINGBOLTDISTANCE = 1600.
-    constant LIGHTNINGRADIUS       = 200.
-    constant OFFSET                = 64.
-    constant FIDELITY              = 1./30.
-    constant HEALVALUE             = 10.
-    constant RADOFFS               = bj_PI/64.
+    constant LIGHTNINGRADIUS       =  200.
+    constant WISP_HEIGHT_CENTER    =  140.
+    constant WISP_HEAL_PER_SECOND  =   10.
+    constant WISP_RADIUS           =  120.
+    constant HEAL_RADIUS           =  400.
 
     constant ILLUMINATION   = "Abilities\\Spells\\Orc\\HealingWave\\HealingWave.wav"
     constant LIGHTNINGSOUND = "Abilities\\Spells\\Items\\WandOfNeutralization\\WandOfNeutralization.wav"
 
-    int obelisksIlluminated = 0
-    group grp = CreateGroup()
-    real offset = 0.
-    unit array wisps
-    timer time = CreateTimer()
+    constant PATH_WISP = "units\\nightelf\\Wisp\\Wisp.mdl"
 
-    function p()
-        int index = 0
-        unit fst
-        offset = offset + RADOFFS
-        if offset > 2*bj_PI
-            offset = offset-2*bj_PI
-        end
-        loop
-            exitwhen index > WISPSCOUNT
-            SetUnitX(wisps[index], GetUnitX(fountain) + OFFSET*(index + 1)*Cos(offset))
-            SetUnitY(wisps[index], GetUnitY(fountain) + OFFSET*(index + 1)*Sin(offset))
-            GroupEnumUnitsInRange(grp, GetUnitX(wisps[index]), GetUnitY(wisps[index]), OFFSET, null)
+    constant CLOCK      = CreateTimer()
+    var      illumCount = 0
+
+    class WellWisp
+        use LinkedListModule
+
+        static constant clock = CreateTimer()
+
+        Fx fx       = new Fx(fountain.getPos().withZ(WISP_HEIGHT_CENTER), angle(0.))
+        angle ang   = angle(GetRandomReal(0., 2. * bj_PI))
+        real offset = GetRandomReal(0., 2. * bj_PI)
+        real velFac = GetRandomReal(1., 3.)
+
+
+        static function tick()
+            let iter = iterator()
             loop
-                fst = FirstOfGroup(grp)
-                exitwhen fst == null
-                if fst == donRogo
-                    SetUnitState(donRogo, UNIT_STATE_LIFE, GetUnitState(donRogo, UNIT_STATE_LIFE) + HEALVALUE)
-                end
-                GroupRemoveUnit(grp, fst)
+                exitwhen not iter.hasNext()
+                let inst = iter.next()
+
+                let centroid = fountain.getPos().withZ(WISP_HEIGHT_CENTER)
+                inst.fx.setXYheight(centroid.polarProject(WISP_RADIUS, inst.ang, angle((getElapsedGameTime() + inst.offset) * inst.velFac)))
             end
-            index++
+            iter.close()
+        end
+
+
+        construct()
+            fx..setOwner(Player(1), true)..setFx(PATH_WISP)
+            if size == 1
+                clock.startPeriodic(ANIMATION_PERIOD, function tick)
+            end
+        end
+    end
+
+
+    constant grp = CreateGroup()
+    function healTick()
+        grp.enumUnitsInRange(fountain.getPos(), HEAL_RADIUS)
+        loop
+            exitwhen not grp.hasNext()
+            let iter = grp.next()
+
+            if iter == donRogo and iter.isAlive()
+                donRogo.setHP(donRogo.getHP() + WISP_HEAL_PER_SECOND * ANIMATION_PERIOD)
+            end
         end
     end
 
     function healingStart()
-        int index = 0
+        var ctr = 0
         loop
-            exitwhen index > WISPSCOUNT
-            wisps[index] = CreateUnit(Player(0), WISPID, GetUnitX(fountain) + OFFSET*(index + 1), GetUnitY(fountain), 270.)
-            index++
+            exitwhen ctr >= NUM_WISPS
+
+            new WellWisp()
+
+            ctr++
         end
-        TimerStart(time, FIDELITY, true, function p)
+        CLOCK.startPeriodic(ANIMATION_PERIOD, function healTick)
     end
 
     function c takes nothing returns bool
@@ -72,8 +97,8 @@ package Use
         if GetSpellAbilityId() == USEID
             targU = GetSpellTargetUnit()
             if GetUnitTypeId(targU) == OBELISK
-                obelisksIlluminated++
-                if obelisksIlluminated == OBELISK_COUNT
+                illumCount++
+                if illumCount == OBELISK_COUNT
                     FogEnable(false)
                     FogMaskEnable(false)
                     globalSound(SECRETFOUND, 127)
