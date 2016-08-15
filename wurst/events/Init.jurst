@@ -158,7 +158,7 @@ package Init
         lavawells[2] = CreateUnit(Player(1), LAVAWELLID, 920., -100., 270.)
         lavawells[3] = CreateUnit(Player(1), LAVAWELLID, 1450., -1450., 270.)
         lavawells[4] = CreateUnit(Player(1), LAVAWELLID, 115., -2030., 270.)
-        FogMaskEnable(false)
+        FogMaskEnable(true)
         DisplayTextToPlayer(GetLocalPlayer(), 0., 0., "Welcome to |cff999999Gargonach's|r Lair. If you get stuck, check the |cff999999Quest Menu|r for tips.")
         return false
     end

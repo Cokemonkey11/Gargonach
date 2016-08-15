@@ -31,7 +31,7 @@ package CryptCrabTriggers
             DestroyEffect(fx)
             index++
         end
-        DisableTrigger(GetTriggeringTrigger())
+        DestroyTrigger(GetTriggeringTrigger())
         return false
     end
 

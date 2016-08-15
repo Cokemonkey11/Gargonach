@@ -75,6 +75,7 @@ package Use
                 obelisksIlluminated++
                 if obelisksIlluminated == OBELISK_COUNT
                     FogEnable(false)
+                    FogMaskEnable(false)
                     globalSound(SECRETFOUND, 127)
                     DisplayTextToPlayer(Player(0), 0, 0, "|cff999999The |robelisks|cff999999 have enabled map vision...|r")
                     QuestSetCompleted(enableLights, true)
