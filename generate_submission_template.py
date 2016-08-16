@@ -70,7 +70,7 @@ ABILITIES = (
     (
         "https://i.imgur.com/GGa2U3X.png",
         (
-            "Ragnorak: After channeling for a short time, Thor's hammer falls from the sky, dealing massive damage and stunning enemy ground units."
+            "Ragnorak: After channeling for a short time, Thor's hammer falls from the sky, dealing massive damage and stunning enemy ground units.",
         )
     ),
 )
@@ -130,7 +130,7 @@ def print_section_header(title):
 
 def get_paragraph(paragraph):
     p = paragraph.strip().replace('\n', ' ').replace('\t', '')
-    return textwrap.fill(p, width=100) + "\n\n"
+    return textwrap.fill(p, width=90) + "\n\n"
 
 
 def print_paragraph(paragraph):
