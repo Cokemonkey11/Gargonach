@@ -1,9 +1,0 @@
-package Game
-    globals
-        public constant int OBELISK_COUNT = 5
-        public bool isOver = false
-        public quest killGargonach
-        public quest enableLights
-        public quest safePassage
-        public quest enableFountain
-    end

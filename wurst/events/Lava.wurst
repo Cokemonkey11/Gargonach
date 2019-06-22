@@ -1,6 +1,6 @@
 package Lava
     import TerrainMod
-    import Units
+    import UnitsApi
 
     constant FIDELITY          = 1./30.
     constant DAMAGE            = 400.*FIDELITY
@@ -8,18 +8,16 @@ package Lava
 
     constant FIREMODEL = "Abilities\\Weapons\\FireBallMissile\\FireBallMissile.mdl"
 
-    function c takes nothing returns bool
+    function c() returns bool
         real uX = GetUnitX(donRogo)
         real uY = GetUnitY(donRogo)
         if GetTerrainType(uX, uY) == TYPE_LAVA and GetUnitFlyHeight(donRogo) < MAXHEIGHTTODAMAGE
             UnitDamageTarget(gargonach, donRogo, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
             AddSpecialEffect(FIREMODEL, uX, uY).destr()
-        end
+
         return false
-    end
 
     init
         trigger t = CreateTrigger()
         TriggerRegisterTimerEvent(t, FIDELITY, true)
         TriggerAddCondition(t, Condition(function c))
-    end

@@ -1,0 +1,158 @@
+package AggroControl
+    import Assets
+    import ClosureTimers
+    import ErrorHandling
+    import UnitsApi
+    import Knockback3
+    import Lavawells
+    import LinkedList
+
+    class AmountDat
+        int amount
+        real timeLeft
+
+    constant ATTACKCOOLDOWN = 5.
+    constant MAXDIST = 1000.
+    constant FIDELITY = 1./2.
+    constant GARG_DEFAULT_PROP_WINDOW = 60..asAngleDegrees()
+
+    constant LAVAATTACKORDER = "breathoffire"
+    constant SMOKESTACKORDER = "deathanddecay"
+
+    var aggro = 0
+    var increasedAggro = 0
+    var timeSinceLastAttack = 0.
+    var radOffs = GetRandomReal(0., bj_PI*2)
+    AmountDat array amountStack
+    var amountIndex = -1
+    timer time = CreateTimer()
+
+    function p()
+        int index = 0
+        while index <= amountIndex
+            let tempDat = amountStack[index]
+            tempDat.timeLeft -= ANIMATION_PERIOD
+            if tempDat.timeLeft < 0.
+                increasedAggro = increasedAggro-tempDat.amount
+                destroy tempDat
+                amountStack[index] = amountStack[amountIndex]
+                amountIndex--
+                if amountIndex == -1
+                    PauseTimer(time)
+            index++
+
+
+    public function increaseAggro(int amount, real timeLeft)
+        AmountDat tempDat = new AmountDat
+        tempDat.amount = amount
+        tempDat.timeLeft = timeLeft
+        amountIndex++
+        amountStack[amountIndex] = tempDat
+        increasedAggro = increasedAggro + amount
+        if amountIndex == 0
+            TimerStart(time, ANIMATION_PERIOD, true, function p)
+
+    enum Spell
+        NONE
+        LAVABURST
+        SMOKESTACK
+        SPAWN_SCARABS
+
+    constant SPELLS = new LinkedList<Spell>()..add(
+        Spell.LAVABURST,
+        Spell.LAVABURST,
+        Spell.SMOKESTACK,
+        Spell.SPAWN_SCARABS
+    )
+
+    constant LAVALESS_SPELLS = new LinkedList<Spell>()..add(
+        Spell.SMOKESTACK,
+        Spell.SMOKESTACK,
+        Spell.SPAWN_SCARABS
+    )
+
+    function spawn_scarabs()
+        gargonach
+            ..setFacing(gargonach.getPos().angleTo(donRogo.getPos()))
+            ..setPropWindow(angle(0.))
+            ..setAnimation(7)
+            ..setTimeScale(0.75)
+            ..pause()
+        let pos = gargonach.getPos().polarOffset(
+            gargonach.getPos().angleTo(donRogo.getPos()),
+            500.
+        )
+        let backPos = gargonach.getPos().polarOffset(
+            gargonach.getFacingAngle(),-100.
+        )
+        addEffect(Objects.impaleTargetDust, backPos).destr()
+
+        doAfter(.9) ->
+            for _z = 1 to 3
+                let u = createUnit(
+                    gargonach.getOwner(),
+                    CRABID,
+                    backPos,
+                    gargonach.getFacingAngle()
+                )..addAbility('Arav')..setFlyHeight(100., 0.)
+                Knockback3.add(u, pos, 800.)
+
+            doAfter(.7893) ->
+                gargonach..setPropWindow(GARG_DEFAULT_PROP_WINDOW)..setTimeScale(1.)..unpause()
+
+    function c() returns bool
+        real bossX = GetUnitX(gargonach)
+        real bossY = GetUnitY(gargonach)
+        real rogoX = GetUnitX(donRogo)
+        real rogoY = GetUnitY(donRogo)
+        real diffX = rogoX - bossX
+        real diffY = rogoY - bossY
+        real dist = SquareRoot(diffX*diffX + diffY*diffY)
+        real facing
+        real newX
+        real newY
+        timeSinceLastAttack = timeSinceLastAttack + FIDELITY
+        if dist > MAXDIST
+            aggro = 0
+        else
+            aggro = R2I(MAXDIST - dist)
+
+        if GetUnitCurrentOrder(gargonach) != OrderId("deathanddecay")
+            if (aggro + increasedAggro) > 0 and GetUnitState(donRogo, UNIT_STATE_LIFE) >= 1
+                if timeSinceLastAttack > ATTACKCOOLDOWN and GetUnitState(donRogo, UNIT_STATE_LIFE) >= 1
+                    timeSinceLastAttack = 0.
+                    SPELLS.shuffle()
+                    LAVALESS_SPELLS.shuffle()
+                    let spell = countAtGarg() > 0 ? SPELLS.getFirst() : LAVALESS_SPELLS.getFirst()
+                    switch spell
+                        case NONE
+                            error("Error - tried to NONE")
+                        case SMOKESTACK
+                            gargonach.issuePointOrder(SMOKESTACKORDER, donRogo.getPos())
+                        case LAVABURST
+                            gargonach.issuePointOrder(LAVAATTACKORDER, donRogo.getPos())
+                        case SPAWN_SCARABS
+                            spawn_scarabs()
+
+                else
+                    if dist < 350. or dist > 500.
+                        newX = GetUnitX(donRogo) + 400.*Cos(radOffs)
+                        newY = GetUnitY(donRogo) + 400.*Sin(radOffs)
+                        IssuePointOrder(gargonach, "move", newX, newY)
+                        radOffs += (GetRandomReal(-1*bj_PI/8, bj_PI/8))
+                    else
+                        IssueImmediateOrder(gargonach, "stop")
+                        facing = Atan2(rogoY-bossY, rogoX-bossX)
+                        radOffs = facing + bj_PI + GetRandomReal(-1*bj_PI/8, bj_PI/8)
+                        if GetUnitState(gargonach, UNIT_STATE_LIFE)>=1 and isUnitPaused(gargonach) == false
+                            SetUnitFacingTimed(gargonach, facing*bj_RADTODEG, FIDELITY)
+
+            else
+                IssuePointOrder(gargonach, "move", 0., 0.)
+
+        return false
+
+    init
+        trigger t = CreateTrigger()
+        TriggerRegisterTimerEvent(t, FIDELITY, true)
+        TriggerAddCondition(t, Condition(function c))

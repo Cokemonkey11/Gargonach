@@ -1,16 +1,15 @@
 package CryptCrabTriggers
-    import Units
+    import UnitsApi
 
     constant SPAWNMIN = 1
     constant SPAWNMAX = 3
-    constant CRABID = 'h00G'
 
     constant MINSPAWNDIST = 200.
     constant MAXSPAWNDIST = 400.
 
     constant EFFECTSTRING = "Abilities\\Spells\\Items\\AIil\\AIilTarget.mdl"
 
-    function c takes nothing returns bool
+    function c()
         effect fx
         int index = 0
         int rand = GetRandomInt(SPAWNMIN, SPAWNMAX)
@@ -19,8 +18,7 @@ package CryptCrabTriggers
         real dist
         real ang
         unit u
-        loop
-            exitwhen index > rand
+        while index <= rand
             ang = GetRandomReal(0., 2*bj_PI)
             dist = GetRandomReal(MINSPAWNDIST, MAXSPAWNDIST)
             randX = GetUnitX(donRogo) + dist*Cos(ang)
@@ -30,10 +28,8 @@ package CryptCrabTriggers
             fx = AddSpecialEffect(EFFECTSTRING, randX, randY)
             DestroyEffect(fx)
             index++
-        end
+
         DestroyTrigger(GetTriggeringTrigger())
-        return false
-    end
 
     init
         trigger northWest = CreateTrigger()
@@ -55,4 +51,3 @@ package CryptCrabTriggers
         TriggerAddCondition(northEast, cond)
         TriggerRegisterEnterRectSimple(southEast, Rect(2310., -2270., 3000., -1870.))
         TriggerAddCondition(southEast, Condition(function c))
-    end

@@ -2,10 +2,10 @@ package RogoDeath
     import Fx
     import Helper
     import TerrainMod
-    import Units
+    import UnitsApi
     import UnitObjEditing
 
-    constant ID_VISION_DUMMY = '!vdm' 
+    constant ID_VISION_DUMMY = '!vdm'
     constant PARTICLESCOUNT  = 15 //Count from 0.
 
     constant FIDELITY              = 1./30.
@@ -34,7 +34,6 @@ package RogoDeath
     real returnedCount
 
     function p()
-        real direction
         real dX
         real dY
         real distance
@@ -78,8 +77,8 @@ package RogoDeath
             for i = 0 to PARTICLESCOUNT
                 if visible[i]
                     let pos = lightParticles[i].getPos2()
-                    direction = Atan2(STARTY - pos.y, STARTX - pos.x)
-                    lightParticles[i].setPos(pos.x + RETURNSPEED*Cos(direction), pos.y + RETURNSPEED*Sin(direction))
+                    let direction = pos.angleTo(vec2(STARTX, STARTY))
+                    lightParticles[i].setXY(pos.polarOffset(direction, RETURNSPEED))
                     dX = pos.x - STARTX
                     dY = pos.y - STARTY
                     distance = SquareRoot(dX*dX + dY*dY)

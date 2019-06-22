@@ -1,11 +1,10 @@
 package Init
     import Game
     import TerrainMod
-    import Units
+    import UnitsApi
 
     constant SANDMILLID = 'h004'
     constant SANDKEGID  = 'h005'
-    constant LAVAWELLID = 'h007'
 
     constant SANDMILLX       =  2280.
     constant SANDMILLY       = -2900.
@@ -83,9 +82,8 @@ package Init
         QuestSetIconPath(enableFountain, "ReplaceableTextures\\CommandButtons\\BTNFountainOfLife.blp")
         QuestSetRequired(enableFountain, true)
         QuestSetTitle(enableFountain, "|cff999999Enable Fountain|r")
-    end
 
-    function c takes nothing returns bool
+    function c()
         int xIndex = 0
         int yIndex
         effect fx
@@ -108,63 +106,48 @@ package Init
         ob = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), OBELISK, 2820., -2320., 270.)
         SetUnitInvulnerable(ob, true)
         CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), GENERATORID, -1000., -3000., 270.)
-        loop
-            exitwhen xIndex > 2
+        while xIndex <= 2
             yIndex = 0
-            loop
-                exitwhen yIndex > 2
+            while yIndex <= 2
                 tempModify(STARTX-128. + 128.*xIndex, STARTY-128. + 128*yIndex, COBBLE_DURATION, TYPE_COBBLESTONE)
                 yIndex++
-            end
+
             xIndex++
-        end
+
         xIndex = 0
-        loop
-            exitwhen xIndex > 4
+        while xIndex <= 4
             tempModify(STARTX-256. + 128.*xIndex, STARTY + 256., MARBLE_DURATION, TYPE_WHITEMARBLE)
             xIndex++
-        end
+
         xIndex = 0
-        loop
-            exitwhen xIndex > 4
+        while xIndex <= 4
             tempModify(STARTX-256. + 128.*xIndex, STARTY-256., MARBLE_DURATION, TYPE_WHITEMARBLE)
             xIndex++
-        end
+
         yIndex = 0
-        loop
-            exitwhen yIndex > 2
+        while yIndex <= 2
             tempModify(STARTX-256., STARTY-128. + 128*yIndex, MARBLE_DURATION, TYPE_WHITEMARBLE)
             yIndex++
-        end
+
         yIndex = 0
-        loop
-            exitwhen yIndex > 2
+        while yIndex <= 2
             tempModify(STARTX + 256., STARTY-128. + 128*yIndex, MARBLE_DURATION, TYPE_WHITEMARBLE)
             yIndex++
-        end
+
         donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
         sandMill = CreateUnit(Player(2), SANDMILLID, SANDMILLX, SANDMILLY, 270.)
         xIndex = 0
-        loop
-            exitwhen xIndex > 4
+        while xIndex <= 4
             sandKegs[xIndex] = CreateUnit(Player(2), SANDKEGID, SANDMILLX + KEGOFFS*Cos(RADOFFS + BUFFEROFFS*xIndex), SANDMILLY + KEGOFFS*Sin(RADOFFS*BUFFEROFFS*xIndex), 270.)
             UnitAddAbility(sandKegs[xIndex], LOCUSTID)
             xIndex++
-        end
+
         fx = AddSpecialEffect(TELEPORT, STARTX, STARTY)
         DestroyEffect(fx)
-        lavawells[0] = CreateUnit(Player(1), LAVAWELLID, -1030., -610., 270.)
-        lavawells[1] = CreateUnit(Player(1), LAVAWELLID, -510., 820., 270.)
-        lavawells[2] = CreateUnit(Player(1), LAVAWELLID, 920., -100., 270.)
-        lavawells[3] = CreateUnit(Player(1), LAVAWELLID, 1450., -1450., 270.)
-        lavawells[4] = CreateUnit(Player(1), LAVAWELLID, 115., -2030., 270.)
         FogMaskEnable(true)
         DisplayTextToPlayer(GetLocalPlayer(), 0., 0., "Welcome to |cff999999Gargonach's|r Lair. If you get stuck, check the |cff999999Quest Menu|r for tips.")
-        return false
-    end
 
     init
         trigger t = CreateTrigger()
         TriggerRegisterTimerEvent(t, STARTTIME, false)
         TriggerAddCondition(t, Condition(function c))
-    end

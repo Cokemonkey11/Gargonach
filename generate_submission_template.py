@@ -75,9 +75,21 @@ ABILITIES = (
     ),
 )
 
-REPOSITORY_URI     = "https://bitbucket.org/Cokemonkey11/gargonach/"
+REPOSITORY_URI = "https://bitbucket.org/Cokemonkey11/gargonach/"
 
-CHANGELOG          = (
+CHANGELOG = (
+    (
+        "0.1.0",
+        "22 June 2019",
+        (
+            "Gargonach's attacks no longer register as hit if you're airborne.",
+            "Gargonach now has another attack in its repertoire: spawn crabs.",
+            "Reworked healing fountain to provide more gameplay interaction.",
+            "The map triggers are now fully translated to WurstScript.",
+            "The map now uses the wurstStdLib2.",
+            "Minor cosmetic tooltip improvements.",
+        )
+    ),
     (
         "0.0.9",
         "16 August 2016",
@@ -117,11 +129,11 @@ CHANGELOG          = (
     ),
 )
 
-HOSTING            = False
-CONTRIBUTING       = "I will merge atomic, well-formed pull-requests if they are consistent with my design policies and issue tracker."
+HOSTING      = False
+CONTRIBUTING = "I will merge atomic, well-formed pull-requests if they are consistent with my design policies and issue tracker."
 
-def write(str):
-    sys.stdout.write(str)
+def write(st):
+    sys.stdout.write(st)
 
 
 def print_section_header(title):

@@ -12,39 +12,20 @@ package Helper
 
     public string array ghoulSounds
 
-    public function getZ takes real x, real y returns real
-        MoveLocation(loc, x, y)
-        return GetLocationZ(loc)
-    end
-
-    public function normalizeAngle takes real rad returns real
-        loop
-            exitwhen rad < bj_PI
-            rad = rad-bj_PI*2
-        end
-        loop
-            exitwhen rad > -1*bj_PI
-            rad = rad + bj_PI*2
-        end
-        return rad
-    end
-
-    public function sound3d takes string what, real x, real y, real z returns nothing
+    public function sound3d(string what, real x, real y, real z)
         sound snd = CreateSound(what, false, true, false, 12700, 12700, "")
         SetSoundPosition(snd, x, y, z)
         SetSoundVolume(snd, 127)
         StartSound(snd)
         KillSoundWhenDone(snd)
-    end
 
-    public function globalSound takes string what, int volume returns nothing //note volume should be between 0 and 127
+    public function globalSound(string what, int volume) //note volume should be between 0 and 127
         sound snd = CreateSound(what, false, false, false, 12700, 12700, "")
         SetSoundVolume(snd, volume)
         StartSound(snd)
         KillSoundWhenDone(snd)
-    end
 
-    public function quickTTAll takes string s, real x, real y, real rad returns nothing
+    public function quickTTAll(string s, real x, real y, real rad)
         texttag t = CreateTextTag()
         SetTextTagColor(t, 200, 200, 200, 200)
         SetTextTagLifespan(t, 2.)
@@ -54,24 +35,20 @@ package Helper
         SetTextTagText(t, s, 12.*.0023)
         SetTextTagVelocity(t, TTVEL*Cos(rad)*.071/128., TTVEL*Sin(rad)*.071/128.)
         SetTextTagVisibility(t, true)
-    end
 
-    public function soundInitialize takes string s returns nothing
+    public function soundInitialize(string s)
         sound snd = CreateSound(s, false, false, false, 12700, 12700, "")
         SetSoundVolume(snd, 1)
         StartSound(snd)
         KillSoundWhenDone(snd)
-    end
 
-    public function isInMap takes real x, real y returns bool
+    public function isInMap(real x, real y) returns bool
         return (x < MAX_X and x > MIN_X and y > MIN_Y and y < MAX_Y)
-    end
 
     public class LightDat
         lightning light
         real timeLeft
         real startTime
-    end
 
     constant FIDELITY = 1./30.
     constant time = CreateTimer()
@@ -81,8 +58,7 @@ package Helper
     function p()
         int index = 0
         LightDat tempDat
-        loop
-            exitwhen index > stackIndex
+        while index <= stackIndex
             tempDat = lightDB[index]
             tempDat.timeLeft = tempDat.timeLeft-FIDELITY
             SetLightningColor(tempDat.light, 1., 1., 1., tempDat.timeLeft/tempDat.startTime)
@@ -93,20 +69,34 @@ package Helper
                 stackIndex--
                 if stackIndex == -1
                     PauseTimer(time)
-                end
-            end
-            index++
-        end
-    end
 
-    public function tempLightning takes string typ, real duration, real xS, real yS, real zS, real xF, real yF, real zF returns nothing
+
+            index++
+
+
+    public function tempLightning(string typ, real duration, real xS, real yS, real zS, real xF, real yF, real zF)
         let tempDat = new LightDat()
-        tempDat.light = AddLightningEx(typ, false, xS, yS, getZ(xS, yS) + zS, xF, yF, getZ(xF, yF) + zF)
+        tempDat.light = AddLightningEx(typ, false, xS, yS, vec2(xS, yS).getTerrainZ() + zS, xF, yF, vec2(xF, yF).getTerrainZ() + zF)
         tempDat.timeLeft = duration
         tempDat.startTime = duration
-        stackIndex = stackIndex + 1
+        stackIndex++
         lightDB[stackIndex] = tempDat
         if stackIndex == 0
             TimerStart(time, FIDELITY, true, function p)
-        end
-    end
+
+    public function angle.smallestDiff(angle other) returns angle
+        return this.direction().dot(other.direction()).acos().asAngleRadians()
+
+    public function angle.toVec2() returns vec2
+        return vec2(0., 0.).polarOffset(this, 1.)
+
+    public function angle.lt(angle other) returns bool
+        return (this.radians() % (2. * PI)) < other.radians()
+
+    public function angle.toString() returns string
+        return (this.degrees() % 360.).toString(2)
+
+    public function unit.isFacing(unit which, real maxRange, angle maxAng) returns bool
+        let angBetween = this.getPos().angleTo(which.getPos())
+        let distBetween = this.getPos().distanceToSq(which.getPos())
+        return (angBetween.smallestDiff(this.getFacingAngle())).lt(maxAng) and distBetween < maxRange*maxRange

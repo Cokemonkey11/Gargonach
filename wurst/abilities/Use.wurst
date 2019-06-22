@@ -5,18 +5,19 @@ package Use
     import Helper
     import LinkedListModule
     import TerrainMod
-    import Units
+    import UnitsApi
 
     constant USEID             = 'A001'
     constant LIGHTID           = 'h003'
     constant HEALTHYFOUNTAINID = 'h00E'
     constant NUM_WISPS         =     8
+    constant ACCEL             =    50.
 
     constant ILLUMINATIONHEIGHT    =  200.
     constant LIGHTNINGBOLTDISTANCE = 1600.
     constant LIGHTNINGRADIUS       =  200.
     constant WISP_HEIGHT_CENTER    =  140.
-    constant WISP_HEAL_PER_SECOND  =   10.
+    constant WISP_HEAL_PER_SECOND  =   2.
     constant WISP_RADIUS           =  120.
     constant HEAL_RADIUS           =  400.
 
@@ -25,68 +26,58 @@ package Use
 
     constant PATH_WISP = "units\\nightelf\\Wisp\\Wisp.mdl"
 
-    constant CLOCK      = CreateTimer()
-    var      illumCount = 0
+    var illumCount = 0
 
     class WellWisp
         use LinkedListModule
 
         static constant clock = CreateTimer()
 
-        Fx fx       = new Fx(fountain.getPos().withZ(WISP_HEIGHT_CENTER), angle(0.))
-        angle ang   = angle(GetRandomReal(0., 2. * bj_PI))
-        real offset = GetRandomReal(0., 2. * bj_PI)
-        real velFac = GetRandomReal(1., 3.)
+        Fx fx
+        angle ang
+        real offset
+        real velFac
+        vec3 vel
 
+        construct()
+            this.fx = new Fx(fountain.getPos3Real() + vec3(0., 0., WISP_HEIGHT_CENTER), angle(0.))
+            this.ang = angle(GetRandomReal(0., 2. * bj_PI))
+            this.offset = GetRandomReal(0., 2. * bj_PI)
+            this.velFac = GetRandomReal(1., 3.)
+            this.vel = vec3(0., 0., 0.)
+            this.fx..setOwner(Player(1), true)..setFx(PATH_WISP)
+
+            if size == 1
+                clock.startPeriodic(ANIMATION_PERIOD, function tick)
 
         static function tick()
             let iter = iterator()
-            loop
-                exitwhen not iter.hasNext()
+            while iter.hasNext()
                 let inst = iter.next()
 
-                let centroid = fountain.getPos().withZ(WISP_HEIGHT_CENTER)
-                inst.fx.setXYheight(centroid.polarProject(WISP_RADIUS, inst.ang, angle((getElapsedGameTime() + inst.offset) * inst.velFac)))
-            end
+                var target = inst.fx.getPos2().distanceToSq(donRogo.getPos()) < 250. * 250. ? donRogo : fountain
+                target.addHP(WISP_HEAL_PER_SECOND * ANIMATION_PERIOD)
+
+                let centroid = target.getPos3Fly() + vec3(0., 0., WISP_HEIGHT_CENTER)
+                let wants = centroid.polarProject(WISP_RADIUS, inst.ang, angle((getElapsedGameTime() + inst.offset) * inst.velFac))
+                let pos = inst.fx.getPos3()
+                inst.vel *= 0.95
+                inst.vel += (wants - pos).norm() * ACCEL * ANIMATION_PERIOD
+                inst.fx.setXYZ(pos + inst.vel, true)
+
             iter.close()
-        end
 
-
-        construct()
-            fx..setOwner(Player(1), true)..setFx(PATH_WISP)
-            if size == 1
-                clock.startPeriodic(ANIMATION_PERIOD, function tick)
-            end
-        end
-    end
-
-
-    constant grp = CreateGroup()
-    function healTick()
-        grp.enumUnitsInRange(fountain.getPos(), HEAL_RADIUS)
-        loop
-            exitwhen not grp.hasNext()
-            let iter = grp.next()
-
-            if iter == donRogo and iter.isAlive()
-                donRogo.setHP(donRogo.getHP() + WISP_HEAL_PER_SECOND * ANIMATION_PERIOD)
-            end
-        end
-    end
 
     function healingStart()
         var ctr = 0
-        loop
-            exitwhen ctr >= NUM_WISPS
+        while ctr < NUM_WISPS
 
             new WellWisp()
 
             ctr++
-        end
-        CLOCK.startPeriodic(ANIMATION_PERIOD, function healTick)
-    end
 
-    function c takes nothing returns bool
+    let grp = CreateGroup()
+    function c()
         unit targU
         real tUX
         real tUY
@@ -104,24 +95,23 @@ package Use
                     globalSound(SECRETFOUND, 127)
                     DisplayTextToPlayer(Player(0), 0, 0, "|cff999999The |robelisks|cff999999 have enabled map vision...|r")
                     QuestSetCompleted(enableLights, true)
-                end
+
                 tUX = GetUnitX(targU)
                 tUY = GetUnitY(targU)
                 CreateUnit(Player(0), LIGHTID, tUX, tUY, 270.)
                 UnitAddAbility(targU, LOCUSTID)
-                sound3d(ILLUMINATION, tUX, tUY, getZ(tUX, tUY) + ILLUMINATIONHEIGHT)
-            elseif GetUnitTypeId(targU) == GENERATORID
+                sound3d(ILLUMINATION, tUX, tUY, vec2(tUX, tUY).getTerrainZ() + ILLUMINATIONHEIGHT)
+            else if GetUnitTypeId(targU) == GENERATORID
                 tUX = GetUnitX(targU)
                 tUY = GetUnitY(targU)
                 ang = Atan2(tUY-GetUnitY(donRogo), tUX-GetUnitX(donRogo))
                 endX = tUX + LIGHTNINGBOLTDISTANCE*Cos(ang)
                 endY = tUY + LIGHTNINGBOLTDISTANCE*Sin(ang)
                 tempLightning("CLPB", 1., tUX, tUY, 200., endX, endY, 50.)
-                sound3d(LIGHTNINGSOUND, tUX, tUY, getZ(tUX, tUY))
+                sound3d(LIGHTNINGSOUND, tUX, tUY, vec2(tUX, tUY).getTerrainZ())
                 GroupEnumUnitsInRange(grp, endX, endY, LIGHTNINGRADIUS, null)
-                loop
-                    fst = FirstOfGroup(grp)
-                    exitwhen fst == null
+                while grp.hasNext()
+                    fst = grp.next()
                     if fst == fountain
                         globalSound(SECRETFOUND, 127)
                         tUX = GetUnitX(fountain)
@@ -132,21 +122,16 @@ package Use
                         UnitAddAbility(targU, 'Aloc')
                         permModify(tUX, tUY, TYPE_GRASS, 4)
                         healingStart()
-                    end
+
                     GroupRemoveUnit(grp, fst)
-                end
+
             else
                 quickTTAll("I can't do that.", GetUnitX(donRogo), GetUnitY(donRogo), bj_PI/2)
-            end
-        end
-        return false
-    end
 
-    function delayedC takes nothing returns bool
+    function delayedC() returns bool
         soundInitialize(ILLUMINATION)
         soundInitialize(LIGHTNINGSOUND)
         return false
-    end
 
     init
         trigger t = CreateTrigger()
@@ -155,4 +140,3 @@ package Use
         TriggerAddCondition(t, Condition(function c))
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
-    end

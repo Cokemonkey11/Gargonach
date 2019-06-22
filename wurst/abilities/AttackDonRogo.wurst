@@ -1,16 +1,15 @@
 package AttackDonRogo
     import AggroControl
     import Helper
-    import Units
+    import UnitsApi
 
     class AttackDat
         unit u
         real timeLeft
-    end
 
     constant ATTACKDONROGOID = 'A002'
 
-    constant ATTACKANGLE      = bj_PI/4
+    constant ATTACKANGLE      = PI / 3.
     constant DAMAGE           =  90.
     constant MAXATTACKHEIGHT  =  75.
     constant RANGE            = 250.
@@ -29,42 +28,29 @@ package AttackDonRogo
     timer time = CreateTimer()
     int dbIndex = -1
 
-    function f takes nothing returns bool
-        real facing
-        real angBetween
-        real difference
-        real fX
-        real fY
-        unit filter = GetFilterUnit()
-        if IsUnitEnemy(filter, owner) and filter != gargonach and GetUnitState(filter, UNIT_STATE_LIFE)>=1 and GetUnitFlyHeight(filter) < MAXATTACKHEIGHT
-            facing = bj_DEGTORAD*GetUnitFacing(attacker)
-            fX = GetUnitX(filter)
-            fY = GetUnitY(filter)
-            angBetween = Atan2(fY-centerY, fX-centerX)
-            difference = facing-angBetween
-            difference = normalizeAngle(difference)
-            if difference < ATTACKANGLE and difference > -1*ATTACKANGLE
+    function f() returns bool
+        let filter = GetFilterUnit()
+
+        if IsUnitEnemy(filter, owner) and filter != gargonach and GetUnitState(filter, UNIT_STATE_LIFE) >= 1 and GetUnitFlyHeight(filter) < MAXATTACKHEIGHT
+            let fX = GetUnitX(filter)
+            let fY = GetUnitY(filter)
+            if attacker.isFacing(filter, RANGE, ATTACKANGLE.asAngleRadians())
                 UnitDamageTarget(attacker, filter, DAMAGE, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
                 sound3d(DAMAGESOUND, fX, fY, GetUnitFlyHeight(filter))
-            end
+
             if GetUnitTypeId(filter) == ID_LAVA_WELL
                 increaseAggro(1, 5.)
-            end
-        end
+
+
         return false
-    end
 
     function p()
         AttackDat tempDat
         int index = 0
-        real facing
         real fX
         real fY
-        real angBetween
-        real difference
         unit fst
-        loop
-            exitwhen index > dbIndex
+        while index <= dbIndex
             tempDat = attackDB[index]
             tempDat.timeLeft = tempDat.timeLeft-FIDELITY
             if tempDat.timeLeft<=0.
@@ -75,36 +61,27 @@ package AttackDonRogo
                 centerY = GetUnitY(tempDat.u)
                 GroupEnumUnitsInRange(grp, centerX, centerY, RANGE, Filter(function f))
                 GroupEnumUnitsInRange(grp, centerX, centerY, BOSSRANGE, null)
-                loop
-                    fst = FirstOfGroup(grp)
-                    exitwhen fst == null
+                while grp.hasNext()
+                    fst = grp.next()
                     if fst == gargonach and GetUnitState(gargonach, UNIT_STATE_LIFE)>=1
-                        facing = bj_DEGTORAD*GetUnitFacing(donRogo)
                         fX = GetUnitX(gargonach)
                         fY = GetUnitY(gargonach)
-                        angBetween = Atan2(fY-centerY, fX-centerX)
-                        facing = normalizeAngle(facing)
-                        angBetween = normalizeAngle(angBetween)
-                        difference = facing-angBetween
-                        if difference < ATTACKANGLE and difference > -1*ATTACKANGLE
+                        if donRogo.isFacing(gargonach, BOSSRANGE, ATTACKANGLE.asAngleRadians())
                             UnitDamageTarget(donRogo, gargonach, DAMAGE, true, false, ATTACK_TYPE_HERO, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
                             sound3d(DAMAGESOUND, fX, fY, GetUnitFlyHeight(gargonach))
-                        end
-                    end
                     GroupRemoveUnit(grp, fst)
-                end
+
                 destroy tempDat
                 attackDB[index] = attackDB[dbIndex]
                 dbIndex--
                 if dbIndex == -1
                     PauseTimer(time)
-                end
-            end
-            index++
-        end
-    end
 
-    function c takes nothing returns bool
+
+            index++
+
+
+    function c()
         AttackDat tempDat
         if GetSpellAbilityId() == ATTACKDONROGOID
             tempDat = new AttackDat
@@ -118,15 +95,11 @@ package AttackDonRogo
             attackDB[dbIndex] = tempDat
             if dbIndex == 0
                 TimerStart(time, FIDELITY, true, function p)
-            end
-        end
-        return false
-    end
 
-    function delayedC takes nothing returns bool
+
+    function delayedC() returns bool
         soundInitialize(DAMAGESOUND)
         return false
-    end
 
     init
         trigger t = CreateTrigger()
@@ -135,4 +108,3 @@ package AttackDonRogo
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
         TriggerAddCondition(t, Condition(function c))
-    end

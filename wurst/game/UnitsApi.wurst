@@ -1,4 +1,6 @@
-package Units
+package UnitsApi
+    import LinkedList
+    public constant CRABID            = 'h00G'
     public constant HEROID            = 'h001'
     public constant OBELISK           = 'h002'
     public constant ID_GARGONACH      = 'h000'
@@ -15,7 +17,12 @@ package Units
     public unit sandMill
     public unit fountain
     public unit array sandKegs
-    public unit array lavawells
+    public constant lavawells = new LinkedList<unit>()
+        ..push(CreateUnit(Player(1), ID_LAVA_WELL, -1030.,  -610., 270.))
+        ..push(CreateUnit(Player(1), ID_LAVA_WELL,  -510.,   820., 270.))
+        ..push(CreateUnit(Player(1), ID_LAVA_WELL,   920.,  -100., 270.))
+        ..push(CreateUnit(Player(1), ID_LAVA_WELL,  1450., -1450., 270.))
+        ..push(CreateUnit(Player(1), ID_LAVA_WELL,   115., -2030., 270.))
 
     constant PAUSEFIDELITY = 1./30.
 

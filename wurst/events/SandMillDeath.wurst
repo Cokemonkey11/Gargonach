@@ -2,12 +2,12 @@ package SandMillDeath
     import Game
     import Helper
     import TerrainMod
-    import Units
+    import UnitsApi
 
     constant DUSTCOUNT = 10
     constant DUSTMODEL = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl"
 
-    function c takes nothing returns bool
+    function c()
         int index = 0
         real dir
         real dist
@@ -16,50 +16,42 @@ package SandMillDeath
         if GetTriggerUnit() == sandMill
             globalSound(SECRETFOUND, 127)
             QuestSetCompleted(safePassage, true)
-            loop
-                exitwhen index > 4
+            while index <= 4
                 SetUnitExploded(sandKegs[index], true)
                 AddSpecialEffect(DUSTMODEL, GetUnitX(sandKegs[index]), GetUnitY(sandKegs[index])).destr()
                 KillUnit(sandKegs[index])
                 index++
-            end
+
             uX = GetUnitX(sandMill)
             uY = GetUnitY(sandMill)
             permModify(uX, uY, TYPE_SAND, 5)
             index = 0
-            loop
-                exitwhen index > DUSTCOUNT
+            while index <= DUSTCOUNT
                 dir = GetRandomReal(0., 2.*bj_PI)
                 dist = GetRandomReal(0., 300.)
                 AddSpecialEffect(DUSTMODEL, uX + dist*Cos(dir), uY + dist*Sin(dir)).destr()
                 index++
-            end
+
             permModify(uX-256., uY + 256., TYPE_SAND, 5)
             index = 0
-            loop
-                exitwhen index > DUSTCOUNT
+            while index <= DUSTCOUNT
                 dir = GetRandomReal(0., 2.*bj_PI)
                 dist = GetRandomReal(0., 300.)
                 AddSpecialEffect(DUSTMODEL, uX-256. + dist*Cos(dir), uY + 256. + dist*Sin(dir)).destr()
                 index++
-            end
+
             permModify(uX-512., uY + 512., TYPE_SAND, 5)
             index = 0
-            loop
-                exitwhen index > DUSTCOUNT
+            while index <= DUSTCOUNT
                 dir = GetRandomReal(0., 2.*bj_PI)
                 dist = GetRandomReal(0., 300.)
                 AddSpecialEffect(DUSTMODEL, uX-512. + dist*Cos(dir), uY + 512. + dist*Sin(dir)).destr()
                 index++
-            end
-        end
-        return false
-    end
 
-    function delayedC takes nothing returns bool
+
+    function delayedC() returns bool
         soundInitialize(SECRETFOUND)
         return false
-    end
 
     init
         trigger t = CreateTrigger()
@@ -68,4 +60,3 @@ package SandMillDeath
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH)
         TriggerAddCondition(t, Condition(function c))
-    end

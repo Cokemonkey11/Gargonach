@@ -2,15 +2,14 @@ package GargonachDeath
     import Fade
     import Game
     import Helper
-    import Units
+    import UnitsApi
 
     constant GOODJOB = "Sound\\Interface\\GoodJob.wav"
 
     function after()
         EndGame(false)
-    end
 
-    function c takes nothing returns bool
+    function c() returns bool
         timer time
         if GetTriggerUnit() == gargonach
             QuestSetCompleted(killGargonach, true)
@@ -22,14 +21,12 @@ package GargonachDeath
             SetUnitTimeScale(gargonach, .25)
             DisplayTimedTextToPlayer(GetLocalPlayer(), 1.05, .5, 15., "|cff999999Victory|r")
             TerrainDeformRipple(GetUnitX(gargonach), GetUnitY(gargonach), 1024., 32., 20000, 1, 4., 40., 1., false)
-        end
-        return false
-    end
 
-    function delayedC takes nothing returns bool
+        return false
+
+    function delayedC() returns bool
         soundInitialize(GOODJOB)
         return false
-    end
 
     init
         trigger t = CreateTrigger()
@@ -38,4 +35,3 @@ package GargonachDeath
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH)
         TriggerAddCondition(t, Condition(function c))
-    end

@@ -1,6 +1,6 @@
 package Ragnorak
     import Helper
-    import Units
+    import UnitsApi
 
     constant RAGNORAKID = 'A004'
     constant HAMMERID   = 'h00A'
@@ -48,35 +48,34 @@ package Ragnorak
                 angle = GetUnitFacing(donRogo) + (timeElapsed/CHANNELTIME)*(bj_PI*2)
                 fx = AddSpecialEffect(CHANNELINGMODEL, GetUnitX(donRogo) + CHANNELEFFECTOFFSET*Cos(angle), GetUnitY(donRogo) + CHANNELEFFECTOFFSET*Sin(angle))
                 DestroyEffect(fx)
-            end
-        elseif timeElapsed > CHANNELTIME and timeElapsed < FALLTIME
+
+        else if timeElapsed > CHANNELTIME and timeElapsed < FALLTIME
             if show == false
                 ShowUnit(ragHammer, true)
                 UnitAddAbility(ragHammer, 'Aloc')
                 show = true
-            end
+
             SetUnitX(ragHammer, GetUnitX(ragHammer) + vX)
             SetUnitY(ragHammer, GetUnitY(ragHammer) + vY)
             SetUnitFlyHeight(ragHammer, TARGETHEIGHT + (INITIALHEIGHT-TARGETHEIGHT)*((FALLTIME-CHANNELTIME)-timeElapsed), 0.)
-        elseif timeElapsed > FALLTIME and timeElapsed < FADETIME
+        else if timeElapsed > FALLTIME and timeElapsed < FADETIME
             if timeElapsed < FALLTIME + .5
                 fx = AddSpecialEffect(DUSTMODEL, tX + GetRandomReal(-100., 100.), tY + GetRandomReal(-100., 100.))
                 DestroyEffect(fx)
-            end
+
             SetUnitVertexColor(ragHammer, 255, 255, 255, R2I(255.-(timeElapsed-FALLTIME)*255.))
 
             if not damaged
                 let uPos = ragHammer.getPos()
- 
+
                 sound3d(SMASHSOUND, uPos.x, uPos.y, GetUnitFlyHeight(ragHammer))
                 sound3d(THUNDERCLAPSOUND, uPos.x, uPos.y, GetUnitFlyHeight(ragHammer))
 
                 grp.enumUnitsInRange(uPos, RADIUS)
-                loop
-                    exitwhen not grp.hasNext()
+                while grp.hasNext()
                     let fst = grp.next()
 
-                    let isEnemy      = fst.isEnemy(Player(0))
+                    let isEnemy      = fst.isEnemyOf(Player(0))
                     let isAlive      = fst.isAlive()
                     let notStructure = not IsUnitType(fst, UNIT_TYPE_STRUCTURE)
                     if isEnemy and isAlive and notStructure
@@ -84,20 +83,19 @@ package Ragnorak
 
                         if fst == gargonach and gargonach.isAlive()
                             timedPause(gargonach, MASSIVEPAUSETIME, "set", STANDARDSTUN)
-                        end
-                    end
-                end
+
+
+
 
                 damaged = true
-            end
+
         else
             ragHammer.remove()
             time.pause()
-        end
-    end
 
 
-    function c takes nothing returns bool
+
+    function c() returns bool
         if GetSpellAbilityId() == RAGNORAKID
             tX = GetSpellTargetX()
             tY = GetSpellTargetY()
@@ -110,16 +108,14 @@ package Ragnorak
             vY = INITIALHEIGHT*Cos(FALLANGLE)*Sin(angle + bj_PI)*FIDELITY
             ShowUnit(ragHammer, false)
             TimerStart(time, FIDELITY, true, function p)
-        end
+
         return false
-    end
 
 
-    function delayedC takes nothing returns bool
+    function delayedC() returns bool
         soundInitialize(SMASHSOUND)
         soundInitialize(THUNDERCLAPSOUND)
         return false
-    end
 
 
     init
@@ -129,4 +125,3 @@ package Ragnorak
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)
         TriggerAddCondition(t, Condition(function c))
-    end

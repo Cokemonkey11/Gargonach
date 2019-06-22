@@ -1,0 +1,27 @@
+package Lighthopping
+    import ClosureEvents
+    import Helper
+    import Knockback3
+    import UnitsApi
+
+    constant LIGHTHOPPINGID = 'A007'
+
+    constant FIRSTHOPPOWER  = 1450.
+    constant SECONDHOPPOWER = 1450.
+    constant DELAY          =     .6
+
+    vec2 target
+    timer time = CreateTimer()
+
+    function after()
+        AddSpecialEffectTarget(FLASHMODEL, donRogo, "origin").destr()
+        Knockback3.add(donRogo, SECONDHOPPOWER, donRogo.getPos().angleTo(target), angle(3.*PI/8.))
+
+
+    init
+        EventListener.add(EVENT_PLAYER_UNIT_SPELL_EFFECT) ->
+            if GetSpellAbilityId() == LIGHTHOPPINGID
+                target = vec2(GetSpellTargetX(), GetSpellTargetY())
+                AddSpecialEffect(FLASHMODEL, GetUnitX(donRogo), GetUnitY(donRogo)).destr()
+                Knockback3.add(donRogo, FIRSTHOPPOWER, angle(0.), angle(0.))
+                TimerStart(time, DELAY, false, function after)

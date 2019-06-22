@@ -1,0 +1,37 @@
+package DivineShield
+    import ClosureEvents
+    import Helper
+    import UnitsApi
+
+    constant DIVINESHIELDID = 'A005'
+    constant DISTANCE = 250.
+    constant ANGLEDIFF = bj_PI/16.
+
+    init
+        soundInitialize(BANISHSOUND)
+
+        EventListener.add(EVENT_PLAYER_UNIT_SPELL_EFFECT) () ->
+            int index = 0
+            real direction
+            real tempSize
+            real tX
+            real tY
+            real cX
+            real cY
+            unit tU
+            unit shield
+            if GetSpellAbilityId() == DIVINESHIELDID
+                tU = GetTriggerUnit()
+                tX = GetSpellTargetX()
+                tY = GetSpellTargetY()
+                cX = GetUnitX(tU)
+                cY = GetUnitY(tU)
+                direction = Atan2(tY-cY, tX-cX)
+                sound3d(BANISHSOUND, tX, tY, vec2(tX, tY).getTerrainZ() + 50.)
+                while index <= 4
+                    shield = CreateUnit(Player(0), SHIELDID, cX + DISTANCE*Cos(direction-ANGLEDIFF*2 + ANGLEDIFF*index), cY + DISTANCE*Sin(direction-ANGLEDIFF*2 + ANGLEDIFF*index), 270.)
+                    tempSize = 1.-SquareRoot((2.-index)*(2.-index))/4.
+                    SetUnitScale(shield, tempSize, tempSize, tempSize)
+                    SetUnitMoveSpeed(shield, 0.)
+                    UnitApplyTimedLife(shield, 'BTLF', 5.)
+                    index++
