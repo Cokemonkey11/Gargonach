@@ -1,0 +1,119 @@
+[CENTER]
+[TABLE]
+[CENTER]
+[H3][color=#60A600]Gargonach[/color][/H3]
+[color=#CCAA00][B]A map by Cokemonkey11[/B][/color]
+
+[BOX=Contents]* Introduction
+* Screenshots
+* Abilities
+* Version Control
+* Changelog
+* Contributing
+[/BOX]
+[/CENTER]
+
+[R][H3][color=#CCAA00]Introduction[/color][/H3][R]
+Gargonach is my entry for the solo mini-mapping contest #7, whose theme         was "Boss
+Fight". This map is inspired from a boss in the original Half-         Life story called
+"Gonarch". The game centers around killing him with         your main character, Don Rogo,
+using various paladin spells and by         completing intermediate goals to ease your
+mission.
+
+For centuries Gargonach rained terror on the world of Azeroth,         unleashing his
+nerubian warriors on the alliance's pitiful creatures so         limited in magic and
+technology. No warrior could match the sheer         brutality of an inter-dimensional
+species, controlling the elements, and         the forces of the Universe. No one until
+Don Rogo.
+
+[R][H3][color=#CCAA00]Screenshots[/color][/H3][R]
+
+
+[hidden=Divine Shield Spell]
+[img]https://i.imgur.com/KLXhNJu.png[/img]
+[/hidden]
+
+[R][H3][color=#CCAA00]Abilities[/color][/H3][R]
+
+
+[otable]
+[tr]
+[tdalt][img]https://i.imgur.com/xSoqYuZ.png[/img][/tdalt]
+[tdalt]Don Rogo: Your hero.[/tdalt]
+[/tr]
+[tr]
+[tdalt][img]https://i.imgur.com/7NdWrM3.png[/img][/tdalt]
+[tdalt]Attack: In Gargonach, Don Rogo will only attack when ordered to.[/tdalt]
+[/tr]
+[tr]
+[tdalt][img]https://i.imgur.com/uyLf194.png[/img][/tdalt]
+[tdalt]Hammerthrow: Don Rogo throws his weapon in the target direction. He must pick it back up
+before attacking again.[/tdalt]
+[/tr]
+[tr]
+[tdalt][img]https://i.imgur.com/aYJ1lvl.png[/img][/tdalt]
+[tdalt]Divine Shield: Creates a temporary shield which is impassible by evil attacks.[/tdalt]
+[/tr]
+[tr]
+[tdalt][img]https://i.imgur.com/t7CdGmv.png[/img][/tdalt]
+[tdalt]Lighthopping: Jumps in the target direction in two delayed bursts of light.[/tdalt]
+[/tr]
+[tr]
+[tdalt][img]https://i.imgur.com/GGa2U3X.png[/img][/tdalt]
+[tdalt]Ragnorak: After channeling for a short time, Thor's hammer falls from the sky, dealing
+massive damage and stunning enemy ground units.[/tdalt]
+[/tr]
+[/otable]
+
+[R][H3][color=#CCAA00]Version Control[/color][/H3][R]
+
+
+All iterations of this map are maintained in a public git repository at
+[url]https://bitbucket.org/Cokemonkey11/gargonach/[/url]
+
+[R][H3][color=#CCAA00]Changelog[/color][/H3][R]
+
+
+[color=#ffcc00]0.1.0[/color] [color=#999999]22 June 2019[/color]:
+[list][*] Gargonach's attacks no longer register as hit if you're airborne.
+[*] Gargonach now has another attack in its repertoire: spawn crabs.
+[*] Reworked healing fountain to provide more gameplay interaction.
+[*] The map triggers are now fully translated to WurstScript.
+[*] The map now uses the wurstStdLib2.
+[*] Minor cosmetic tooltip improvements.
+[/list]
+
+[color=#ffcc00]0.0.9[/color] [color=#999999]16 August 2016[/color]:
+[list][*] The map triggers are now fully translated to WurstScript compliant Jurst.
+[*] Fixed issue #13 which deselected Don Rogo during revive animation.
+[*] Fixed issue #12 which allowed the player to select the revive animation sprites.
+[*] Fixed issue #17 which allowed the player to select the hammer after using Hammerthrow.
+[*] Fixed issue #15 which allowed the player to select the Shield blobs when usnig Divine
+Shield.
+[*] Made Gargonach's Smokestack ability stronger (#18).
+[*] Adjusted which Don Rogo spells provide a stun effect.
+[*] The map now uses a black fog mask (#19).
+[*] Minor QoL terrain improvements.
+[*] Fixed issue #16 which allowed players to spam the Hammerthrow ability over and over
+without cooldown.
+[*] Ragnorak no longer affects structures.
+[*] Fountain now heals significantly slower.
+[*] Fountain wisps are less goofy looking.
+[/list]
+
+[color=#ffcc00]0.0.8[/color] [color=#999999]22 May 2012[/color]:
+[list][*] First patch fixing a bug with don rogo attack spell and lighthopping tooltip.
+[*] Fixed some pathing blocker positions.
+[*] Small interface change.
+[/list]
+
+[color=#ffcc00]0.0.7[/color] [color=#999999]17 May 2012[/color]:
+[list][*] Initial version uploaded to hiveworkshop.com as contest entry.
+[/list]
+
+[R][H3][color=#CCAA00]Contributing[/color][/H3][R]
+I will merge atomic, well-formed pull-requests if they are consistent with my design
+policies and issue tracker.
+
+[/TABLE]
+[/CENTER]
