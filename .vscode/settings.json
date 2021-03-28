@@ -1,7 +1,10 @@
 {
-   "wurst.wurstJar": "C:\\Users\\Blake\\.wurst\\wurstscript.jar",
-   "wurst.wc3path": "C:\\Program Files (x86)\\Warcraft III",
-   "files.associations": {
-       "wurst.build": "yaml"
-   }
+  "wurst.wurstJar" : "/home/blake/.wurst/wurstscript.jar",
+  "wurst.wc3path" : "C:\\Program Files (x86)\\Warcraft III",
+  "files.associations" : {
+    "wurst.build" : "yaml"
+  },
+  "yaml.schemas" : {
+    "./.vscode/wbschema.json" : "/wurst.build"
+  }
 }
