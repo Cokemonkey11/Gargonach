@@ -1,23 +1,36 @@
 package Lava
+    import Assets
+    import ClosureForGroups
+    import ClosureTimers
+    import LinkedList
+    import TerrainUtils
+
     import TerrainMod
     import UnitsApi
 
-    constant FIDELITY          = 1./30.
-    constant DAMAGE            = 400.*FIDELITY
+    constant DAMAGE            = 400.*ANIMATION_PERIOD
     constant MAXHEIGHTTODAMAGE = 25.
 
-    constant FIREMODEL = "Abilities\\Weapons\\FireBallMissile\\FireBallMissile.mdl"
+    constant FIRE_MODELS = asList(
+        Abilities.fireBallMissile,
+        Abilities.flameStrikeDamageTarget,
+        Abilities.lavaSpawnMissile
+    )
+
+    public function LinkedList<string>.sample() returns string
+        return this.get(GetRandomInt(0, this.size() - 1))
 
     function c() returns bool
-        real uX = GetUnitX(donRogo)
-        real uY = GetUnitY(donRogo)
-        if GetTerrainType(uX, uY) == TYPE_LAVA and GetUnitFlyHeight(donRogo) < MAXHEIGHTTODAMAGE
-            UnitDamageTarget(gargonach, donRogo, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-            AddSpecialEffect(FIREMODEL, uX, uY).destr()
+        forUnitsInRect(bj_mapInitialPlayableArea) (unit u) ->
+            if u.isAlive() and u != gargonach and u.getPos().getTerrainType() == TYPE_LAVA and u.getFlyHeight() < MAXHEIGHTTODAMAGE
+                gargonach.damageTarget(u, DAMAGE)
+                let fx = addEffect(FIRE_MODELS.sample(), u.getPos3Real() + vec3(0., 0., GetRandomReal(10., 120.)))
+                doAfter(0.5) ->
+                    fx.destr()
 
         return false
 
     init
-        trigger t = CreateTrigger()
-        TriggerRegisterTimerEvent(t, FIDELITY, true)
+        let t = CreateTrigger()
+        TriggerRegisterTimerEvent(t, ANIMATION_PERIOD, true)
         TriggerAddCondition(t, Condition(function c))

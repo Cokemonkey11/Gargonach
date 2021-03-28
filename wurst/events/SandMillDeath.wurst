@@ -1,52 +1,52 @@
 package SandMillDeath
+    import Assets
+    import ClosureTimers
+
     import Game
     import Helper
     import TerrainMod
     import UnitsApi
 
-    constant DUSTCOUNT = 10
-    constant DUSTMODEL = "Objects\\Spawnmodels\\Undead\\ImpaleTargetDust\\ImpaleTargetDust.mdl"
+    constant DUSTCOUNT = 30
+    constant DUSTMODEL = Objects.impaleTargetDust
 
     function c()
         int index = 0
-        real dir
-        real dist
-        real uX
-        real uY
         if GetTriggerUnit() == sandMill
-            globalSound(SECRETFOUND, 127)
+            doAfter(1.) ->
+                globalSound(SECRETFOUND, 127)
             QuestSetCompleted(safePassage, true)
             while index <= 4
                 SetUnitExploded(sandKegs[index], true)
                 AddSpecialEffect(DUSTMODEL, GetUnitX(sandKegs[index]), GetUnitY(sandKegs[index])).destr()
                 KillUnit(sandKegs[index])
                 index++
-
-            uX = GetUnitX(sandMill)
-            uY = GetUnitY(sandMill)
-            permModify(uX, uY, TYPE_SAND, 5)
+            let uX = GetUnitX(sandMill)
+            let uY = GetUnitY(sandMill)
             index = 0
             while index <= DUSTCOUNT
-                dir = GetRandomReal(0., 2.*bj_PI)
-                dist = GetRandomReal(0., 300.)
+                let dir = GetRandomReal(0., 2.*bj_PI)
+                let dist = GetRandomReal(0., 300.)
                 AddSpecialEffect(DUSTMODEL, uX + dist*Cos(dir), uY + dist*Sin(dir)).destr()
                 index++
 
-            permModify(uX-256., uY + 256., TYPE_SAND, 5)
-            index = 0
-            while index <= DUSTCOUNT
-                dir = GetRandomReal(0., 2.*bj_PI)
-                dist = GetRandomReal(0., 300.)
-                AddSpecialEffect(DUSTMODEL, uX-256. + dist*Cos(dir), uY + 256. + dist*Sin(dir)).destr()
-                index++
+            doAfter(0.5) ->
+                permModify(uX, uY, TYPE_SAND, 5)
+                permModify(uX-256., uY + 256., TYPE_SAND, 5)
+                index = 0
+                while index <= DUSTCOUNT
+                    let dir = GetRandomReal(0., 2.*bj_PI)
+                    let dist = GetRandomReal(0., 300.)
+                    AddSpecialEffect(DUSTMODEL, uX-256. + dist*Cos(dir), uY + 256. + dist*Sin(dir)).destr()
+                    index++
 
-            permModify(uX-512., uY + 512., TYPE_SAND, 5)
-            index = 0
-            while index <= DUSTCOUNT
-                dir = GetRandomReal(0., 2.*bj_PI)
-                dist = GetRandomReal(0., 300.)
-                AddSpecialEffect(DUSTMODEL, uX-512. + dist*Cos(dir), uY + 512. + dist*Sin(dir)).destr()
-                index++
+                permModify(uX-512., uY + 512., TYPE_SAND, 5)
+                index = 0
+                while index <= DUSTCOUNT
+                    let dir = GetRandomReal(0., 2.*bj_PI)
+                    let dist = GetRandomReal(0., 300.)
+                    AddSpecialEffect(DUSTMODEL, uX-512. + dist*Cos(dir), uY + 512. + dist*Sin(dir)).destr()
+                    index++
 
 
     function delayedC() returns bool
@@ -54,8 +54,8 @@ package SandMillDeath
         return false
 
     init
-        trigger t = CreateTrigger()
-        trigger delayed = CreateTrigger()
+        let t = CreateTrigger()
+        let delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH)

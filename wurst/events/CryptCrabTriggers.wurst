@@ -1,4 +1,5 @@
 package CryptCrabTriggers
+    import TimerUtils
     import UnitsApi
 
     constant SPAWNMIN = 1
@@ -9,22 +10,41 @@ package CryptCrabTriggers
 
     constant EFFECTSTRING = "Abilities\\Spells\\Items\\AIil\\AIilTarget.mdl"
 
+    class SimpleEnemyAi
+        use TimedLoop
+
+        unit which
+
+        construct(unit which)
+            this.which = which
+            startTimedLoop()
+
+        override function getPeriod() returns real
+            return 1.
+
+        override function onTimedLoop()
+            this.which.issuePointOrder("attack", donRogo.getPos())
+
+            if not this.which.isAlive()
+                destroy this
+
+    public function unit.into_enemy_ai()
+        new SimpleEnemyAi(this)
+
     function c()
         effect fx
         int index = 0
-        int rand = GetRandomInt(SPAWNMIN, SPAWNMAX)
+        let rand = GetRandomInt(SPAWNMIN, SPAWNMAX)
         real randX
         real randY
         real dist
         real ang
-        unit u
         while index <= rand
             ang = GetRandomReal(0., 2*bj_PI)
             dist = GetRandomReal(MINSPAWNDIST, MAXSPAWNDIST)
             randX = GetUnitX(donRogo) + dist*Cos(ang)
             randY = GetUnitY(donRogo) + dist*Sin(ang)
-            u = CreateUnit(Player(1), CRABID, randX, randY, 270.)
-            SetUnitExploded(u, true)
+            CreateUnit(Player(1), CRABID, randX, randY, 270.)..setExploded(true)..setTimedLife(30.)..into_enemy_ai()
             fx = AddSpecialEffect(EFFECTSTRING, randX, randY)
             DestroyEffect(fx)
             index++
@@ -32,13 +52,13 @@ package CryptCrabTriggers
         DestroyTrigger(GetTriggeringTrigger())
 
     init
-        trigger northWest = CreateTrigger()
-        trigger west = CreateTrigger()
-        trigger southWest = CreateTrigger()
-        trigger north = CreateTrigger()
-        trigger northEast = CreateTrigger()
-        trigger southEast = CreateTrigger()
-        boolexpr cond = Condition(function c)
+        let northWest = CreateTrigger()
+        let west = CreateTrigger()
+        let southWest = CreateTrigger()
+        let north = CreateTrigger()
+        let northEast = CreateTrigger()
+        let southEast = CreateTrigger()
+        let cond = Condition(function c)
         TriggerRegisterEnterRectSimple(northWest, Rect(-2990., 1000., -1660., 1300.))
         TriggerAddCondition(northWest, cond)
         TriggerRegisterEnterRectSimple(west, Rect(-3000., -320., -1900., -100.))

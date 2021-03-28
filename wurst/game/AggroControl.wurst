@@ -7,6 +7,8 @@ package AggroControl
     import Lavawells
     import LinkedList
 
+    import CryptCrabTriggers
+
     class AmountDat
         int amount
         real timeLeft
@@ -43,7 +45,7 @@ package AggroControl
 
 
     public function increaseAggro(int amount, real timeLeft)
-        AmountDat tempDat = new AmountDat
+        let tempDat = new AmountDat
         tempDat.amount = amount
         tempDat.timeLeft = timeLeft
         amountIndex++
@@ -94,20 +96,20 @@ package AggroControl
                     CRABID,
                     backPos,
                     gargonach.getFacingAngle()
-                )..addAbility('Arav')..setFlyHeight(100., 0.)
+                )..addAbility('Arav')..setFlyHeight(100., 0.)..into_enemy_ai()..setTimedLife(30.)
                 Knockback3.add(u, pos, 800.)
 
             doAfter(.7893) ->
                 gargonach..setPropWindow(GARG_DEFAULT_PROP_WINDOW)..setTimeScale(1.)..unpause()
 
     function c() returns bool
-        real bossX = GetUnitX(gargonach)
-        real bossY = GetUnitY(gargonach)
-        real rogoX = GetUnitX(donRogo)
-        real rogoY = GetUnitY(donRogo)
-        real diffX = rogoX - bossX
-        real diffY = rogoY - bossY
-        real dist = SquareRoot(diffX*diffX + diffY*diffY)
+        let bossX = GetUnitX(gargonach)
+        let bossY = GetUnitY(gargonach)
+        let rogoX = GetUnitX(donRogo)
+        let rogoY = GetUnitY(donRogo)
+        let diffX = rogoX - bossX
+        let diffY = rogoY - bossY
+        let dist = SquareRoot(diffX*diffX + diffY*diffY)
         real facing
         real newX
         real newY
@@ -153,6 +155,6 @@ package AggroControl
         return false
 
     init
-        trigger t = CreateTrigger()
+        let t = CreateTrigger()
         TriggerRegisterTimerEvent(t, FIDELITY, true)
         TriggerAddCondition(t, Condition(function c))

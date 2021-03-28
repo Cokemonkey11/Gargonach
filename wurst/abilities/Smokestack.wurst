@@ -1,4 +1,7 @@
 package Smokestack
+    import ClosureTimers
+    import SoundUtils
+
     import Helper
     import Knockback3
     import UnitsApi
@@ -6,13 +9,14 @@ package Smokestack
     constant SMOKESTACKID     = 'A006'
     constant LAUNCHSMOKECOUNT = 15
     constant MAX_FLY_HEIGHT_HIT = 200.
+    constant KNOCKUP_POWER    = 1400.
 
     constant FIDELITY    =   1./30.
     constant CHANNELTIME =    .9
     constant RADIUS      = 180.
-    constant DAMAGE      = 200.
+    constant DAMAGE      = 300.
 
-    constant LAUNCHSOUND  = "Abilities\\Spells\\Human\\Defend\\DefendCaster.wav"
+    constant LAUNCHSOUND  = "Abilities\\Spels\\Human\\Defend\\DefendCaster.wav"
     constant IMPALESTRING = "Abilities\\Spells\\Undead\\Impale\\ImpaleMissTarget.mdl"
 
     bool warningShown
@@ -23,6 +27,8 @@ package Smokestack
     real uY
     real uX
     real timeElapsed
+
+    constant HIT_SOUND = new SoundDefinition(Sounds.impaleHit, false, true)
 
     function p()
         int index = 0
@@ -52,10 +58,17 @@ package Smokestack
             while grp.hasNext()
                 fst = grp.next()
                 if fst == donRogo and donRogo.getFlyHeight() < MAX_FLY_HEIGHT_HIT
-                    UnitDamageTarget(gargonach, fst, DAMAGE, true, true, ATTACK_TYPE_MAGIC, DAMAGE_TYPE_NORMAL, WEAPON_TYPE_WHOKNOWS)
-                    Knockback3.add(fst, 1300., angle(0.), angle(0.))
-                    fx = AddSpecialEffect(IMPALESTRING, GetUnitX(fst), GetUnitY(fst))
-                    DestroyEffect(fx)
+                    gargonach.damageTarget(fst, DAMAGE)
+                    Knockback3.add(fst, KNOCKUP_POWER, angle(0.), angle(0.))
+                    addEffect(IMPALESTRING, fst.getPos())..setScale(2.)..destr()
+                    for i = 0 to 4
+                        addEffect(
+                            IMPALESTRING,
+                            fst.getPos().polarOffset(angle(PI2) * i.toReal() / 5, 32.)
+                        )..setTimeScale(1.5)..destr()
+                    HIT_SOUND..playOnPoint(fst.getPos3Real())
+                    doAfter(0.5) ->
+                        HIT_SOUND..playOnPoint(fst.getPos3Real())
 
                 GroupRemoveUnit(grp, fst)
 
@@ -79,8 +92,8 @@ package Smokestack
         return false
 
     init
-        trigger t = CreateTrigger()
-        trigger delayed = CreateTrigger()
+        let t = CreateTrigger()
+        let delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)

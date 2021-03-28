@@ -13,20 +13,20 @@ package Helper
     public string array ghoulSounds
 
     public function sound3d(string what, real x, real y, real z)
-        sound snd = CreateSound(what, false, true, false, 12700, 12700, "")
+        let snd = CreateSound(what, false, true, false, 12700, 12700, "")
         SetSoundPosition(snd, x, y, z)
         SetSoundVolume(snd, 127)
         StartSound(snd)
         KillSoundWhenDone(snd)
 
     public function globalSound(string what, int volume) //note volume should be between 0 and 127
-        sound snd = CreateSound(what, false, false, false, 12700, 12700, "")
+        let snd = CreateSound(what, false, false, false, 12700, 12700, "")
         SetSoundVolume(snd, volume)
         StartSound(snd)
         KillSoundWhenDone(snd)
 
     public function quickTTAll(string s, real x, real y, real rad)
-        texttag t = CreateTextTag()
+        let t = CreateTextTag()
         SetTextTagColor(t, 200, 200, 200, 200)
         SetTextTagLifespan(t, 2.)
         SetTextTagFadepoint(t, 1.)
@@ -37,7 +37,7 @@ package Helper
         SetTextTagVisibility(t, true)
 
     public function soundInitialize(string s)
-        sound snd = CreateSound(s, false, false, false, 12700, 12700, "")
+        let snd = CreateSound(s, false, false, false, 12700, 12700, "")
         SetSoundVolume(snd, 1)
         StartSound(snd)
         KillSoundWhenDone(snd)

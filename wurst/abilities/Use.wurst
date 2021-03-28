@@ -55,7 +55,7 @@ package Use
             while iter.hasNext()
                 let inst = iter.next()
 
-                var target = inst.fx.getPos2().distanceToSq(donRogo.getPos()) < 250. * 250. ? donRogo : fountain
+                let target = inst.fx.getPos2().distanceToSq(donRogo.getPos()) < 250. * 250. ? donRogo : fountain
                 target.addHP(WISP_HEAL_PER_SECOND * ANIMATION_PERIOD)
 
                 let centroid = target.getPos3Fly() + vec3(0., 0., WISP_HEIGHT_CENTER)
@@ -134,8 +134,8 @@ package Use
         return false
 
     init
-        trigger t = CreateTrigger()
-        trigger delayed = CreateTrigger()
+        let t = CreateTrigger()
+        let delayed = CreateTrigger()
         TriggerRegisterPlayerUnitEvent(t, Player(0), EVENT_PLAYER_UNIT_SPELL_EFFECT, null)
         TriggerAddCondition(t, Condition(function c))
         TriggerRegisterTimerEvent(delayed, 0., false)

@@ -37,8 +37,8 @@ package Lavawells
         Lavae tempDat
         bool detonated
         int index = 0
-        real garX = GetUnitX(gargonach)
-        real garY = GetUnitY(gargonach)
+        let garX = GetUnitX(gargonach)
+        let garY = GetUnitY(gargonach)
         real ballX
         real ballY
         real dir
@@ -137,8 +137,8 @@ package Lavawells
 
     public function attack()
         int index = 0
-        real donX = GetUnitX(donRogo)
-        real donY = GetUnitY(donRogo)
+        let donX = GetUnitX(donRogo)
+        let donY = GetUnitY(donRogo)
         real dir
         Lavae tempDat
         while index <= stackIndex
@@ -186,7 +186,7 @@ package Lavawells
         int index = 0
         int alive = 0
         int atGargCount
-        int liveCount = countLiveWells()
+        let liveCount = countLiveWells()
         Lavae tempDat
         while index < liveCount
             GroupEnumUnitsInRect(grp, bj_mapInitialPlayableArea, null)
@@ -225,8 +225,7 @@ package Lavawells
         if alive == 0
             DestroyTrigger(GetTriggeringTrigger())
 
-
     init
-        trigger t = CreateTrigger()
+        let t = CreateTrigger()
         TriggerRegisterTimerEvent(t, FIDELITY, true)
         TriggerAddCondition(t, Condition(function c))

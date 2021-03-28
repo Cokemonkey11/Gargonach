@@ -3,6 +3,6 @@ projectName: Gargonach
 dependencies:
 - https://github.com/wurstscript/WurstStdlib2
 buildMapData:
-  name: '|cff999999Gargonach|r 0.1.0'
-  fileName: (1)Gargonach0.1.0
+  name: '|cff999999Gargonach|r 0.1.1'
+  fileName: (1)Gargonach0.1.1
   author: Cokemonkey11

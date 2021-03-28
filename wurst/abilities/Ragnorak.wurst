@@ -119,8 +119,8 @@ package Ragnorak
 
 
     init
-        trigger t = CreateTrigger()
-        trigger delayed = CreateTrigger()
+        let t = CreateTrigger()
+        let delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_SPELL_EFFECT)

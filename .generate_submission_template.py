@@ -22,7 +22,7 @@ INTRODUCTION = (
     """
 
         For centuries Gargonach rained terror on the world of Azeroth,
-        unleashing his nerubian warriors on the alliance's pitiful creatures so
+        unleashing his Nerubian warriors on the alliance's pitiful creatures so
         limited in magic and technology. No warrior could match the sheer
         brutality of an inter-dimensional species, controlling the elements, and
         the forces of the Universe. No one until Don Rogo.
@@ -79,6 +79,20 @@ REPOSITORY_URI = "https://bitbucket.org/Cokemonkey11/gargonach/"
 
 CHANGELOG = (
     (
+        "0.1.1",
+        "28 Mar 2021",
+        (
+            "Crypt crabs now pursue the player.",
+            "Crypt crabs can now die in lava.",
+            "Crypt crabs now have a timed life.",
+            "Gargonach's 'smokestack' ability now does 50% more damage (300).",
+            "Gargonach's 'smokestack' ability now knocks up with more power.",
+            "Gargonach's 'smokestack' ability has improved effects and sounds.",
+            "Don Rogo can no longer die during the Victory special-effects.",
+            "Removed the incomplete change-log from the quests menu.",
+        )
+    ),
+    (
         "0.1.0",
         "22 June 2019",
         (
@@ -98,7 +112,7 @@ CHANGELOG = (
             "Fixed issue #13 which deselected Don Rogo during revive animation.",
             "Fixed issue #12 which allowed the player to select the revive animation sprites.",
             "Fixed issue #17 which allowed the player to select the hammer after using Hammerthrow.",
-            "Fixed issue #15 which allowed the player to select the Shield blobs when usnig Divine Shield.",
+            "Fixed issue #15 which allowed the player to select the Shield blobs when using Divine Shield.",
             "Made Gargonach's Smokestack ability stronger (#18).",
             "Adjusted which Don Rogo spells provide a stun effect.",
             "The map now uses a black fog mask (#19).",
@@ -193,14 +207,14 @@ def print_screenshots():
 def print_abilities():
     if ABILITIES:
         print_section_header("Abilities")
-        write("\n\n[otable]\n")
+        write("\n\n[table]\n")
         for race in ABILITIES:
-            write("[tr]\n[tdalt][img]" + race[0] + "[/img][/tdalt]\n[tdalt]")
+            write("[tr]\n[td][img]" + race[0] + "[/img][/td]\n[td]")
             for paragraph in race[1][0:-1]:
                 print_paragraph(paragraph)
             write(get_paragraph(race[1][-1])[0:-2])
-            write("[/tdalt]\n[/tr]\n")
-        write("[/otable]\n\n")
+            write("[/td]\n[/tr]\n")
+        write("[/table]\n\n")
 
 
 def print_repository_uri():

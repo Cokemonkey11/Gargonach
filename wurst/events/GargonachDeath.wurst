@@ -20,6 +20,7 @@ package GargonachDeath
             TimerStart(time, 10., false, function after)
             SetUnitTimeScale(gargonach, .25)
             DisplayTimedTextToPlayer(GetLocalPlayer(), 1.05, .5, 15., "|cff999999Victory|r")
+            donRogo.setInvulnerable(true)
             TerrainDeformRipple(GetUnitX(gargonach), GetUnitY(gargonach), 1024., 32., 20000, 1, 4., 40., 1., false)
 
         return false
@@ -29,8 +30,8 @@ package GargonachDeath
         return false
 
     init
-        trigger t = CreateTrigger()
-        trigger delayed = CreateTrigger()
+        let t = CreateTrigger()
+        let delayed = CreateTrigger()
         TriggerRegisterTimerEvent(delayed, 0., false)
         TriggerAddCondition(delayed, Condition(function delayedC))
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH)

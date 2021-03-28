@@ -10,8 +10,7 @@ package TerrainMod
     public constant MAX_Y  = 3070.
     public constant MIN_X  = -3300.
     public constant MIN_Y  = -3570.
-    public constant STARTX = -2560.
-    public constant STARTY = 2560.
+    public constant START_POS = vec2(-2560., 2560.)
 
     constant TERRAIN_VARIATION_RANDOM = -1
     constant TERRAIN_SHAPE_CIRCLE     =  0
@@ -53,7 +52,7 @@ package TerrainMod
     end
 
     public function tempModify takes real x, real y, real duration, int terrainType returns nothing
-        MapCellData tempDat = new MapCellData
+        let tempDat = new MapCellData
         tempDat.previousType = GetTerrainType(x, y)
         tempDat.timeLeft = duration
         tempDat.x = x

@@ -13,15 +13,14 @@ package Init
     constant BUFFEROFFS      =    bj_PI/8
     constant COBBLE_DURATION =     4.
     constant MARBLE_DURATION =     5.
-    constant STARTTIME       =      .5
+    constant STARTTIME       =     1.
     constant TIMEOFDAY       =    12.
 
     constant TELEPORT = "Abilities\\Spells\\Human\\MassTeleport\\MassTeleportTarget.mdl"
 
     function initializeQuests()
-        quest credits = CreateQuest()
-        quest mapDescrip = CreateQuest()
-        quest changeLog = CreateQuest()
+        let credits = CreateQuest()
+        let mapDescrip = CreateQuest()
         // credits
         QuestSetCompleted(credits, false)
         QuestSetDescription(credits, "Thanks to |cff999999Vexorian|r and |cff999999Anitarf|r for the original IsTerrainWalkable library.|n |nThanks to the developers of |cff999999Half-Life|r for the inspiration to make this map.|n |nThanks to |cff999999highdarktemplar|r at deviantart for the Gonarch painting.")
@@ -38,14 +37,6 @@ package Init
         QuestSetIconPath(mapDescrip, "ReplaceableTextures\\CommandButtons\\BTNGreaterRejuvScroll.blp")
         QuestSetRequired(mapDescrip, false)
         QuestSetTitle(mapDescrip, "|cff999999Map Description|r")
-        // changeLog
-        QuestSetCompleted(changeLog, false)
-        QuestSetDescription(changeLog, "|cff9999992012.05.22|r - Version 008: First patch fixing a bug with don rogo attack spell and lighthopping tooltip, also fixing some pathing blocker positions. Small interface change.|n|cff9999992012.05.17|r - Version 007: First Upload (Final Entry for the Contest)")
-        QuestSetDiscovered(changeLog, true)
-        QuestSetEnabled(changeLog, true)
-        QuestSetIconPath(changeLog, "ReplaceableTextures\\CommandButtons\\BTNScrollOfHaste.blp")
-        QuestSetRequired(changeLog, false)
-        QuestSetTitle(changeLog, "|cff999999Change Log|r")
         // killGargonach
         killGargonach = CreateQuest()
         QuestSetCompleted(killGargonach, false)
@@ -67,7 +58,7 @@ package Init
         // safePassage
         safePassage = CreateQuest()
         QuestSetCompleted(safePassage, false)
-        QuestSetDescription(safePassage, "There exists a safe passage to Gargonach.|n |n|cff993300Tip:|r There's a |cff999999Sand Mill|r in the southeast corner of the map.")
+        QuestSetDescription(safePassage, "There is a safe passage to Gargonach.|n |n|cff993300Tip:|r There's a |cff999999Sand Mill|r in the southeast corner of the map.")
         QuestSetDiscovered(safePassage, true)
         QuestSetEnabled(safePassage, true)
         QuestSetIconPath(safePassage, "ReplaceableTextures\\CommandButtons\\BTNHumanLumberMill.blp")
@@ -86,9 +77,8 @@ package Init
     function c()
         int xIndex = 0
         int yIndex
-        effect fx
-        unit ob = CreateUnit(Player(PLAYER_NEUTRAL_PASSIVE), OBELISK, STARTX-256., STARTY + 256., 270.)
-        weathereffect wE = AddWeatherEffect(bj_mapInitialPlayableArea, 'FDwl')
+        unit ob = createUnit(players[PLAYER_NEUTRAL_PASSIVE], OBELISK, START_POS + vec2(-256., 256.), angle(PI) * 1.5)
+        let wE = AddWeatherEffect(bj_mapInitialPlayableArea, 'FDwl')
         EnableWeatherEffect(wE, true)
         initializeQuests()
         gargonach = CreateUnit(Player(1), ID_GARGONACH, 0., 0., 270.)
@@ -109,32 +99,33 @@ package Init
         while xIndex <= 2
             yIndex = 0
             while yIndex <= 2
-                tempModify(STARTX-128. + 128.*xIndex, STARTY-128. + 128*yIndex, COBBLE_DURATION, TYPE_COBBLESTONE)
+                tempModify(START_POS.x-128. + 128.*xIndex, START_POS.y-128. + 128*yIndex, COBBLE_DURATION, TYPE_COBBLESTONE)
                 yIndex++
 
             xIndex++
 
         xIndex = 0
         while xIndex <= 4
-            tempModify(STARTX-256. + 128.*xIndex, STARTY + 256., MARBLE_DURATION, TYPE_WHITEMARBLE)
+            tempModify(START_POS.x-256. + 128.*xIndex, START_POS.y + 256., MARBLE_DURATION, TYPE_WHITEMARBLE)
             xIndex++
 
         xIndex = 0
         while xIndex <= 4
-            tempModify(STARTX-256. + 128.*xIndex, STARTY-256., MARBLE_DURATION, TYPE_WHITEMARBLE)
+            tempModify(START_POS.x-256. + 128.*xIndex, START_POS.y-256., MARBLE_DURATION, TYPE_WHITEMARBLE)
             xIndex++
 
         yIndex = 0
         while yIndex <= 2
-            tempModify(STARTX-256., STARTY-128. + 128*yIndex, MARBLE_DURATION, TYPE_WHITEMARBLE)
+            tempModify(START_POS.x-256., START_POS.y-128. + 128*yIndex, MARBLE_DURATION, TYPE_WHITEMARBLE)
             yIndex++
 
         yIndex = 0
         while yIndex <= 2
-            tempModify(STARTX + 256., STARTY-128. + 128*yIndex, MARBLE_DURATION, TYPE_WHITEMARBLE)
+            tempModify(START_POS.x + 256., START_POS.y-128. + 128*yIndex, MARBLE_DURATION, TYPE_WHITEMARBLE)
             yIndex++
 
-        donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
+        donRogo = CreateUnit(Player(0), HEROID, START_POS.x, START_POS.y, 270.)
+        players[0].selectSingle(donRogo)
         sandMill = CreateUnit(Player(2), SANDMILLID, SANDMILLX, SANDMILLY, 270.)
         xIndex = 0
         while xIndex <= 4
@@ -142,12 +133,13 @@ package Init
             UnitAddAbility(sandKegs[xIndex], LOCUSTID)
             xIndex++
 
-        fx = AddSpecialEffect(TELEPORT, STARTX, STARTY)
-        DestroyEffect(fx)
+        for i = 0 to 5
+            addEffect(TELEPORT, START_POS)..destr()..setPos(START_POS + vec3(0., 0., 50. * i))
+
         FogMaskEnable(true)
-        DisplayTextToPlayer(GetLocalPlayer(), 0., 0., "Welcome to |cff999999Gargonach's|r Lair. If you get stuck, check the |cff999999Quest Menu|r for tips.")
+        DisplayTextToPlayer(localPlayer, 0., 0., "Welcome to |cff999999Gargonach's|r Lair. If you get stuck, check the |cff999999Quest Menu|r for tips.")
 
     init
-        trigger t = CreateTrigger()
+        let t = CreateTrigger()
         TriggerRegisterTimerEvent(t, STARTTIME, false)
         TriggerAddCondition(t, Condition(function c))

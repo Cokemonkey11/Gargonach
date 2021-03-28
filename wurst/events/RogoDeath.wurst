@@ -42,7 +42,7 @@ package RogoDeath
             if visible[0] == false
                 visible[0] = true
                 deadPos = donRogo.getPos()
-                lightParticles[0] = new Fx(deadPos, angle(0.), PATH_PARTICLE)
+                lightParticles[0] = new Fx(deadPos.withZ(PARTICLESTARTHEIGHT), angle(0.), PATH_PARTICLE)
                 lightParticles[0].setZ(PARTICLESTARTHEIGHT)
                 visionDummy = createUnit(Player(0), ID_VISION_DUMMY, deadPos, angle(0.))
 
@@ -65,7 +65,7 @@ package RogoDeath
                 lightParticles[i].setXY(lightParticles[i].getPos2() + particleVel[i])
                 particleVel[i] = particleVel[i] * EXPLODESLOWDOWNRATE
 
-            donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
+            donRogo = CreateUnit(Player(0), HEROID, START_POS.x, START_POS.y, 270.)
             donRogo..setVertexColor(255, 255, 255, 0)
                    ..hide()
                    ..pause()
@@ -77,10 +77,10 @@ package RogoDeath
             for i = 0 to PARTICLESCOUNT
                 if visible[i]
                     let pos = lightParticles[i].getPos2()
-                    let direction = pos.angleTo(vec2(STARTX, STARTY))
+                    let direction = pos.angleTo(vec2(START_POS.x, START_POS.y))
                     lightParticles[i].setXY(pos.polarOffset(direction, RETURNSPEED))
-                    dX = pos.x - STARTX
-                    dY = pos.y - STARTY
+                    dX = pos.x - START_POS.x
+                    dY = pos.y - START_POS.y
                     distance = SquareRoot(dX*dX + dY*dY)
                     if distance < REACHEDDIST
                         returnedCount++
@@ -91,14 +91,14 @@ package RogoDeath
                         visionDummy.remove()
                         visible[i] = false
                         SetUnitVertexColor(donRogo, 255, 255, 255, R2I(returnedCount*255/(PARTICLESCOUNT + 1)))
-                        AddSpecialEffect(FLASHMODEL, STARTX, STARTY).destr()
+                        AddSpecialEffect(FLASHMODEL, START_POS.x, START_POS.y).destr()
                         if returnedCount > PARTICLESCOUNT
                             ready = true
 
         else
             PauseTimer(time)
             RemoveUnit(donRogo)
-            donRogo = CreateUnit(Player(0), HEROID, STARTX, STARTY, 270.)
+            donRogo = CreateUnit(Player(0), HEROID, START_POS.x, START_POS.y, 270.)
             Player(0).selectSingle(donRogo)
 
 
@@ -112,7 +112,7 @@ package RogoDeath
 
 
     init
-        trigger t = CreateTrigger()
+        let t = CreateTrigger()
         TriggerRegisterAnyUnitEventBJ(t, EVENT_PLAYER_UNIT_DEATH)
         TriggerAddCondition(t, Condition(function c))
 

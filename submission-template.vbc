@@ -21,7 +21,7 @@ using various paladin spells and by         completing intermediate goals to eas
 mission.
 
 For centuries Gargonach rained terror on the world of Azeroth,         unleashing his
-nerubian warriors on the alliance's pitiful creatures so         limited in magic and
+Nerubian warriors on the alliance's pitiful creatures so         limited in magic and
 technology. No warrior could match the sheer         brutality of an inter-dimensional
 species, controlling the elements, and         the forces of the Universe. No one until
 Don Rogo.
@@ -36,34 +36,34 @@ Don Rogo.
 [R][H3][color=#CCAA00]Abilities[/color][/H3][R]
 
 
-[otable]
+[table]
 [tr]
-[tdalt][img]https://i.imgur.com/xSoqYuZ.png[/img][/tdalt]
-[tdalt]Don Rogo: Your hero.[/tdalt]
+[td][img]https://i.imgur.com/xSoqYuZ.png[/img][/td]
+[td]Don Rogo: Your hero.[/td]
 [/tr]
 [tr]
-[tdalt][img]https://i.imgur.com/7NdWrM3.png[/img][/tdalt]
-[tdalt]Attack: In Gargonach, Don Rogo will only attack when ordered to.[/tdalt]
+[td][img]https://i.imgur.com/7NdWrM3.png[/img][/td]
+[td]Attack: In Gargonach, Don Rogo will only attack when ordered to.[/td]
 [/tr]
 [tr]
-[tdalt][img]https://i.imgur.com/uyLf194.png[/img][/tdalt]
-[tdalt]Hammerthrow: Don Rogo throws his weapon in the target direction. He must pick it back up
-before attacking again.[/tdalt]
+[td][img]https://i.imgur.com/uyLf194.png[/img][/td]
+[td]Hammerthrow: Don Rogo throws his weapon in the target direction. He must pick it back up
+before attacking again.[/td]
 [/tr]
 [tr]
-[tdalt][img]https://i.imgur.com/aYJ1lvl.png[/img][/tdalt]
-[tdalt]Divine Shield: Creates a temporary shield which is impassible by evil attacks.[/tdalt]
+[td][img]https://i.imgur.com/aYJ1lvl.png[/img][/td]
+[td]Divine Shield: Creates a temporary shield which is impassible by evil attacks.[/td]
 [/tr]
 [tr]
-[tdalt][img]https://i.imgur.com/t7CdGmv.png[/img][/tdalt]
-[tdalt]Lighthopping: Jumps in the target direction in two delayed bursts of light.[/tdalt]
+[td][img]https://i.imgur.com/t7CdGmv.png[/img][/td]
+[td]Lighthopping: Jumps in the target direction in two delayed bursts of light.[/td]
 [/tr]
 [tr]
-[tdalt][img]https://i.imgur.com/GGa2U3X.png[/img][/tdalt]
-[tdalt]Ragnorak: After channeling for a short time, Thor's hammer falls from the sky, dealing
-massive damage and stunning enemy ground units.[/tdalt]
+[td][img]https://i.imgur.com/GGa2U3X.png[/img][/td]
+[td]Ragnorak: After channeling for a short time, Thor's hammer falls from the sky, dealing
+massive damage and stunning enemy ground units.[/td]
 [/tr]
-[/otable]
+[/table]
 
 [R][H3][color=#CCAA00]Version Control[/color][/H3][R]
 
@@ -73,6 +73,17 @@ All iterations of this map are maintained in a public git repository at
 
 [R][H3][color=#CCAA00]Changelog[/color][/H3][R]
 
+
+[color=#ffcc00]0.1.1[/color] [color=#999999]28 Mar 2021[/color]:
+[list][*] Crypt crabs now pursue the player.
+[*] Crypt crabs can now die in lava.
+[*] Crypt crabs now have a timed life.
+[*] Gargonach's 'smokestack' ability now does 50% more damage (300).
+[*] Gargonach's 'smokestack' ability now knocks up with more power.
+[*] Gargonach's 'smokestack' ability has improved effects and sounds.
+[*] Don Rogo can no longer die during the Victory special-effects.
+[*] Removed the incomplete change-log from the quests menu.
+[/list]
 
 [color=#ffcc00]0.1.0[/color] [color=#999999]22 June 2019[/color]:
 [list][*] Gargonach's attacks no longer register as hit if you're airborne.
@@ -88,7 +99,7 @@ All iterations of this map are maintained in a public git repository at
 [*] Fixed issue #13 which deselected Don Rogo during revive animation.
 [*] Fixed issue #12 which allowed the player to select the revive animation sprites.
 [*] Fixed issue #17 which allowed the player to select the hammer after using Hammerthrow.
-[*] Fixed issue #15 which allowed the player to select the Shield blobs when usnig Divine
+[*] Fixed issue #15 which allowed the player to select the Shield blobs when using Divine
 Shield.
 [*] Made Gargonach's Smokestack ability stronger (#18).
 [*] Adjusted which Don Rogo spells provide a stun effect.
